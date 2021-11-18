@@ -41,6 +41,7 @@ def drawBoard(app, canvas):
         app.marginTop, app.marginSide+ app.boardWidth, 
              app.marginTop + app.innerMargin,  outline = "black") #Go to jail coordinates
     drawBlocks(app, canvas)
+    drawInnerBoard(app, canvas)
  
 def createBoardCoordinates(app):
     #Creating a 2D list of the blocks coordinates
@@ -52,6 +53,47 @@ def createBoardCoordinates(app):
     app.boardCoordinates.append(row2)
     col2 = rightColCoordinates(app)
     app.baordCoordinates.append(col2)
+
+def drawInnerBoard(app, canvas):
+    #Draws the inside of the board meaning the monopoly and special cards
+    x0 = app.marginSide + 3*app.innerMargin/2
+    #print("x0: ", x0)
+    x1 = app.marginSide + app.innerBoardLength + app.innerMargin/2
+    #print("x1: ", x1)
+    y0 = (app.marginTop + 2*app.innerMargin + app.innerBoardLength/8 + 
+        3*app.marginSide/4)
+    y1 = y0 + (app.innerBoardLength/6)
+    canvas.create_rectangle(x0, y0, x1, y1, fill = "red", outline = "black",
+        width = 3)
+    boxHeight = y1 - y0
+    boxWidth = x1 - x0
+    canvas.create_text((x0 + 1/2*boxWidth),#Drawing monopoply in center of board
+        y0 + boxHeight/2, text="MONOPOLY", font =
+        "Arial 28 bold", fill = "white")
+    #Drawing community chest
+    #x0 = 4*app.marginSide/3 + app.innerMargin
+    x1 = x0 + 2*app.marginSide
+    y0 = app.marginTop + 4*app.innerMargin/3
+    y1 = y0 + app.innerMargin
+    boxHeight = y1 - y0
+    boxWidth = x1 - x0
+    canvas.create_rectangle(x0, y0, x1, y1, fill = "cyan")
+    canvas.create_text((x0 + 1/2*boxWidth),
+        y0 + boxHeight/2, text="Community Chest", font =
+        "Arial 10 bold", fill = "black")
+    
+    #Drawing Chance
+    x1 = app.marginSide + app.innerBoardLength + app.innerMargin/2
+    x0 = x1 - 2*app.marginSide
+    y0 = app.marginTop + app.innerBoardLength - app.innerMargin/4
+    y1 = y0 + app.innerMargin 
+    canvas.create_rectangle(x0, y0, x1, y1, fill = "orange")
+    canvas.create_text((x0 + 1/2*boxWidth),
+        y0 + boxHeight/2, text="Chance", font =
+        "Arial 10 bold", fill = "black")
+
+
+    
     
 
 def bottomRowCoordinates(app):
