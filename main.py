@@ -42,6 +42,7 @@ def drawBoard(app, canvas):
              app.marginTop + app.innerMargin,  outline = "black") #Go to jail coordinates
     drawBlocks(app, canvas)
     drawInnerBoard(app, canvas)
+    drawSpecialBlocks(app,canvas)
  
 def createBoardCoordinates(app):
     #Creating a 2D list of the blocks coordinates
@@ -52,7 +53,7 @@ def createBoardCoordinates(app):
     row2 = topRowCoordinates(app)
     app.boardCoordinates.append(row2)
     col2 = rightColCoordinates(app)
-    app.baordCoordinates.append(col2)
+    app.boardCoordinates.append(col2)
 
 def drawInnerBoard(app, canvas):
     #Draws the inside of the board meaning the monopoly and special cards
@@ -92,9 +93,75 @@ def drawInnerBoard(app, canvas):
         y0 + boxHeight/2, text="Chance", font =
         "Arial 10 bold", fill = "black")
 
+def textLocation(x0, y0, x1, y1):
+    boxWidth = x1-x0
+    boxHeight = y1-y0
+    return (boxWidth, boxHeight)
 
+def drawSpecialBlocks(app, canvas):
+    #The Go Block
+    margin = 20
+    x0 = app.marginSide + app.boardWidth
+    y0 = app.marginTop+app.boardWidth
+    x1 = app.marginSide + app.boardWidth - app.innerMargin
+    y1 = app.marginTop+app.boardWidth - app.innerMargin
+    boxWidth, boxHeight = textLocation(x0, y0, x1, y1)
+    canvas.create_text((x0 + 1/2*boxWidth),
+        y0 + boxHeight/2, text="GO", font =
+        "Arial 30 bold", fill = "red")
+    canvas.create_text((x0 + 1/2*boxWidth),
+        y0 + boxHeight/2 - margin, text="Collect $200 as you pass", font =
+        "Arial 5 bold", fill = "black")
+
+    #The Jail Block
+    x0 = app.marginSide
+    y0 = app.marginTop + app.boardWidth - app.innerMargin
+    x1 = app.marginSide + app.innerMargin
+    y1 = app.marginTop + app.boardWidth
+    boxWidth, boxHeight = textLocation(x0, y0, x1, y1)
+    canvas.create_rectangle(x0, y0, x1, y1 - boxHeight/2, fill = "orange", 
+        outline = "black")
+    y1 = y1 - boxHeight/2
+    canvas.create_text((x0 + 1/2*boxWidth),
+        y0 + boxHeight/2 - margin, text="In Jail", font =
+        "Arial 10 bold", fill = "black")
+    y0 = y1
+    y1 = app.marginTop + app.boardWidth
+    canvas.create_text((x0 + 1/2*boxWidth),
+        y0 + boxHeight/2 - margin, text="Just Visiting", font =
+        "Arial 10 bold", fill = "black")
+
+    #The Free Parking 
+    x0 = app.marginSide
+    y0 = app.marginTop
+    x1 = app.marginSide + app.innerMargin
+    y1 = app.marginTop+app.innerMargin
+    boxWidth, boxHeight = textLocation(x0, y0, x1, y1)
+    canvas.create_text((x0 + 1/2*boxWidth),
+        y0 + boxHeight/2 - margin, text="Free", font =
+        "Arial 15 bold", fill = "red")
+    canvas.create_text((x0 + 1/2*boxWidth),
+        y0 + boxHeight/2 + margin/2, text="Parking!", font =
+        "Arial 15 bold", fill = "red")
+
+    #Go to Jail
+    x0 = app.marginSide + app.boardWidth - app.innerMargin
+    y0 = app.marginTop
+    x1 = app.marginSide+ app.boardWidth
+    y1 = app.marginTop + app.innerMargin
+    boxWidth, boxHeight = textLocation(x0, y0, x1, y1)
+    canvas.create_text((x0 + 1/2*boxWidth),
+        y0 + boxHeight/2 - margin, text="Go", font =
+        "Arial 15 bold", fill = "blue")
+    canvas.create_text((x0 + 1/2*boxWidth),
+        y0 + boxHeight/2 + margin/2, text="To Jail!", font =
+        "Arial 15 bold", fill = "blue")
     
-    
+
+
+
+
+
 
 def bottomRowCoordinates(app):
     #Gets the coordinates for the row of blocks at the bottom of the board
@@ -128,15 +195,12 @@ def drawBlocks(app, canvas):
     for (x0, y0, x1, y1) in col2:
         #print("x0: ", x0, "y0: ", y0, "x1: ", x1, "y1: ", y1)
         canvas.create_rectangle(x0, y0, x1, y1, outline = "black" )
-    
-    
 
 def leftColCoordinates(app):
     #Gets the coordinates for the column of blocks on the left of the board
     col1 = []
     blockWidth = app.innerBoardLength/app.nBlocks
     startHeight = app.marginTop + app.boardWidth - app.innerMargin
-    
     x0 = app.marginSide
     #canvas.create_line(x0, startHeight, x1, startHeight, outline = "purple")
     x1 = x0 + app.innerMargin
@@ -155,7 +219,6 @@ def topRowCoordinates(app):
     startWidth = app.marginSide + app.innerMargin
     y0 = app.marginTop
     y1 = y0 + app.innerMargin
-
     for i in range(app.nBlocks):
         x0 = startWidth + (i)*blockWidth
         x1 = startWidth + (i+1)*blockWidth
@@ -175,6 +238,8 @@ def rightColCoordinates(app):
         y1 = startHeight + (i+1)*blockWidth
         col2.append((x0, y0, x1, y1))
     return col2
+
+
 
 
 
