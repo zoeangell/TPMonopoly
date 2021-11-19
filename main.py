@@ -10,7 +10,6 @@ def appStarted(app):
     app.boardCoordinates = []
     app.nBlocks = 9
     
-
 def keyPressed(app, event):
     if (event.key == "Space"):
         leftColCoordinates(app)
@@ -36,7 +35,8 @@ def drawBoard(app, canvas):
         app.marginTop+app.innerMargin, outline = "black") #coordinates for free parking
     canvas.create_rectangle(app.marginSide, app.marginTop+app.boardWidth - app.innerMargin,
         app.marginSide + app.innerMargin, app.marginTop + app.boardWidth, outline = "black")
-        #coordinates of jail just visiting
+        #coordinates of jail just visiting/in jail coordinates
+        #
     canvas.create_rectangle(app.marginSide + app.boardWidth - app.innerMargin,
         app.marginTop, app.marginSide+ app.boardWidth, 
              app.marginTop + app.innerMargin,  outline = "black") #Go to jail coordinates
@@ -121,6 +121,7 @@ def drawSpecialBlocks(app, canvas):
     boxWidth, boxHeight = textLocation(x0, y0, x1, y1)
     canvas.create_rectangle(x0, y0, x1, y1 - boxHeight/2, fill = "orange", 
         outline = "black")
+    getInJail(app, x0, y0, x1, y1)
     y1 = y1 - boxHeight/2
     canvas.create_text((x0 + 1/2*boxWidth),
         y0 + boxHeight/2 - margin, text="In Jail", font =
@@ -130,7 +131,6 @@ def drawSpecialBlocks(app, canvas):
     canvas.create_text((x0 + 1/2*boxWidth),
         y0 + boxHeight/2 - margin, text="Just Visiting", font =
         "Arial 10 bold", fill = "black")
-
     #The Free Parking 
     x0 = app.marginSide
     y0 = app.marginTop
@@ -157,6 +157,9 @@ def drawSpecialBlocks(app, canvas):
         y0 + boxHeight/2 + margin/2, text="To Jail!", font =
         "Arial 15 bold", fill = "blue")
     
+
+#def getInJail(app, x0, y0, x1, y1):
+    #return ()
 
 
 
