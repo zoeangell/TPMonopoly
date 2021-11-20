@@ -1,5 +1,7 @@
 from cmu_112_graphics import *
 import random
+from block import *
+from gameplay import *
 
 def appStarted(app):
     app.boardWidth = 500
@@ -8,11 +10,17 @@ def appStarted(app):
     app.innerMargin = 75
     app.innerBoardLength = app.boardWidth - 2*app.innerMargin
     app.boardCoordinates = []
+    app.board = []
     app.nBlocks = 9
+    createBoardCoordinates(app)
+    createBoard(app)
     
 def keyPressed(app, event):
     if (event.key == "Space"):
         leftColCoordinates(app)
+
+#def timerFired(app): ##I don't know if this is a bad solution
+    #createBoardCoordinates(app)
 
 def redrawAll(app, canvas):
     drawBoard(app, canvas)
@@ -43,6 +51,7 @@ def drawBoard(app, canvas):
     drawBlocks(app, canvas)
     drawInnerBoard(app, canvas)
     drawSpecialBlocks(app,canvas)
+    drawBlockDesign(app, canvas)
  
 def createBoardCoordinates(app):
     #Creating a 2D list of the blocks coordinates
@@ -54,6 +63,7 @@ def createBoardCoordinates(app):
     app.boardCoordinates.append(row2)
     col2 = rightColCoordinates(app)
     app.boardCoordinates.append(col2)
+    print(app.boardCoordinates)
 
 def drawInnerBoard(app, canvas):
     #Draws the inside of the board meaning the monopoly and special cards
@@ -121,7 +131,6 @@ def drawSpecialBlocks(app, canvas):
     boxWidth, boxHeight = textLocation(x0, y0, x1, y1)
     canvas.create_rectangle(x0, y0, x1, y1 - boxHeight/2, fill = "orange", 
         outline = "black")
-    getInJail(app, x0, y0, x1, y1)
     y1 = y1 - boxHeight/2
     canvas.create_text((x0 + 1/2*boxWidth),
         y0 + boxHeight/2 - margin, text="In Jail", font =
@@ -158,11 +167,7 @@ def drawSpecialBlocks(app, canvas):
         "Arial 15 bold", fill = "blue")
     
 
-#def getInJail(app, x0, y0, x1, y1):
-    #return ()
-
-
-
+##Need to write a function to send the in jail/visiting coordinates
 
 
 
@@ -186,6 +191,7 @@ def drawBlocks(app, canvas):
     col1 = leftColCoordinates(app)
     row2 = topRowCoordinates(app)
     col2 = rightColCoordinates(app)
+    #createBoardCoordinates(app)
     for (x0, y0, x1, y1) in row1:
         #print("x0: ", x0, "y0: ", y0, "x1: ", x1, "y1: ", y1)
         canvas.create_rectangle(x0, y0, x1, y1, outline = "black" )
@@ -241,6 +247,174 @@ def rightColCoordinates(app):
         y1 = startHeight + (i+1)*blockWidth
         col2.append((x0, y0, x1, y1))
     return col2
+
+###########Creating the Board##########################
+#location, color, name, price
+def createBoard(app):
+    row1 = []
+    goLocation = (app.marginSide + app.boardWidth, app.marginTop+app.boardWidth,
+        app.marginSide + app.boardWidth - app.innerMargin,
+            app.marginTop+app.boardWidth - app.innerMargin)
+    go = Corner(goLocation, None, "GO", 200, False)
+    medAve = Block(app.boardCoordinates[0][0], "purple", "Med Ave",
+        -60)
+    cChest1 = SpecialCards(app.boardCoordinates[0][1], None, "Community Chest",
+        None)
+    balticAve = Block(app.boardCoordinates[0][2], "purple", "Baltic Ave", -60)
+    incomeTax = Tax(app.boardCoordinates[0][3], None, "Income Tax", -200)
+    rail1 = Railroad(app.boardCoordinates[0][4], None, "Reading Railroad", -200)
+    orientalAve = Block(app.boardCoordinates[0][5], "grey", "Oriental Ave",
+        -100)
+    chance1 = SpecialCards(app.boardCoordinates[0][6], None, "Chance",
+        None)
+    vermontAve = Block(app.boardCoordinates[0][7], "grey", "Vermont Ave", -100)
+    ctAve = Block(app.boardCoordinates[0][8], "grey", "CT Ave", -120)
+    row1.extend([go, medAve, cChest1, balticAve, incomeTax, rail1, orientalAve,
+        chance1, vermontAve, ctAve])
+
+    col1 = []
+    '''canvas.create_rectangle(app.marginSide, app.marginTop+app.boardWidth - app.innerMargin,
+        app.marginSide + app.innerMargin, app.marginTop + app.boardWidth, outline = "black")'''
+    jailLocation = (app.marginSide, app.marginTop+app.boardWidth - 
+        app.innerMargin,app.marginSide + app.innerMargin, app.marginTop + 
+            app.boardWidth)
+    jail = Corner(jailLocation, None, "Jail", None, False)
+    stCharles = Block(app.boardCoordinates[1][0], "pink", "St. Charles Place",
+        -140)
+    electric = Utility(app.boardCoordinates[1][1], None, "Electric Company",
+        -150)
+    statesAve = Block(app.boardCoordinates[1][2], "pink", "States Ave", -140)
+    vaAve = Block(app.boardCoordinates[1][3], "pink", "VA Ave",
+        -160)
+    rail2 = Railroad(app.boardCoordinates[1][4], None, "PA Railroad", -200)
+    stJames = Block(app.boardCoordinates[1][5], "orange", "St. James Ave", 
+        -180)
+    cChest2 = SpecialCards(app.boardCoordinates[1][6], None, "Community Chest",
+        None)
+    tnAve = Block(app.boardCoordinates[1][7], "orange", "TN Ave", -180)
+    nyAve = Block(app.boardCoordinates[1][8], "orange", "NY Ave", -200)
+    col1.extend([jail, stCharles, electric, statesAve, vaAve, rail2, stJames,
+        cChest2, tnAve, nyAve])
+    
+    row2 = []
+    parkingLocation = (app.marginSide, app.marginTop, app.marginSide+
+        app.innerMargin, app.marginTop+app.innerMargin)
+    parking = Corner(parkingLocation, None, "Free", None, False)
+    kyAve = Block(app.boardCoordinates[2][0], "red", "KY Ave", -220)
+    chance2 = SpecialCards(app.boardCoordinates[2][1], None, "Chance", None)
+    inAve = Block(app.boardCoordinates[2][2], "red", "IN Ave", -220)
+    ilAve = Block(app.boardCoordinates[2][3], "red", "IL Ave", -240)
+    rail3 = Railroad(app.boardCoordinates[2][4], None, "B&0 Railroad", -200)
+    atlanticAve = Block(app.boardCoordinates[2][5], "yellow", "Atlantic Ave",
+        -260)
+    ventinorAve = Block(app.boardCoordinates[2][6], "yellow", "Ventinor Ave",
+        -260)
+    waterWorks = Utility(app.boardCoordinates[2][7], None, "Water Works", -150)
+    marvinGardens = Block(app.boardCoordinates[2][8], "yellow", 
+        "Marvin Gardens", -280)
+    row2.extend([parking, kyAve, chance2, inAve, ilAve, rail3, atlanticAve, 
+        ventinorAve, waterWorks, marvinGardens])
+    
+    col2 = []
+    goToJailLoc = (app.marginSide + app.boardWidth - app.innerMargin,
+        app.marginTop, app.marginSide+ app.boardWidth, 
+             app.marginTop + app.innerMargin)
+    goToJail = Corner(goToJailLoc, None, "Go To Jail", None, True)
+    pacificAve = Block(app.boardCoordinates[3][0], "green", "Pacific Ave", 
+        -300)
+    ncAve = Block(app.boardCoordinates[3][1], "green", "NC Ave", -300)
+    cChest3 = SpecialCards(app.boardCoordinates[3][2], None, "Community Chest", 
+        None)
+    paAve = Block(app.boardCoordinates[3][3], "green", "PA Ave", -320)
+    rail4 = Railroad(app.boardCoordinates[3][4], None, "Short Line", -200)
+    chance3 = SpecialCards(app.boardCoordinates[3][5], None, "Chance", None)
+    parkPlace = Block(app.boardCoordinates[3][6], "blue", "Park Place", -350)
+    luxTax = Tax(app.boardCoordinates[3][7], None, "Luxury Tax", -75)
+    boardwalk = Block(app.boardCoordinates[3][8], "blue", "Boardwalk", -400)
+    col2.extend([goToJail, pacificAve, ncAve, cChest3, paAve, rail4, chance3,
+        parkPlace, luxTax, boardwalk])
+
+    app.board.extend([row1, col1, row2, col2])
+    print("len of board",len(app.board))
+
+def drawBlockDesign(app, canvas):
+    #Filling in the blocks on the outside of the board
+    margin = 25
+    margin2 = 5
+    margin3 = 50
+    margin4 = 30
+    for row in range(len(app.board)):
+         for col in range(1, len(app.board[0])):
+            curblock = app.board[row][col]
+            x0, y0, x1, y1 = curblock.location
+            if(row % 2 == 1):
+                    if(curblock.color != None):
+                        yDiff = y1-y0
+                        xCenter = (x0 + x1)/2
+                        canvas.create_rectangle(x0, y0, x1, y0 + yDiff/6, fill = curblock.color,
+                            outline = "black")
+                        canvas.create_text(xCenter, y0 + yDiff - margin, 
+                            text = f'{curblock.name}',
+                            font = "Arial 8 bold", fill = "black")
+                        canvas.create_text(xCenter, y0 + yDiff - margin2, 
+                            text = f'Price: ${abs(curblock.price)}',
+                            font = "Arial 8 bold", fill = "black")
+                    if(isinstance(curblock, SpecialCards)):
+                        yDiff = y1-y0
+                        xCenter = (x0 + x1)/2
+                        if curblock.name == "Chance":
+                            canvas.create_text(xCenter, y0 + yDiff - (margin4), text = f'{curblock.name}',
+                                font = "Arial 8 bold", fill = "black")
+                            canvas.create_text(xCenter, y0 + yDiff - margin/2, text = "?",
+                                font = "Arial 24 bold", fill = "orange")
+                        else:
+                            name = curblock.name.split()
+                            canvas.create_text(xCenter, y0 + yDiff - (margin4), text = name[0],
+                                font = "Arial 8 bold", fill = "black")
+                            canvas.create_text(xCenter, y0 + yDiff - (margin4), text = name[1],
+                                font = "Arial 8 bold", fill = "black")
+                            
+                    if(isinstance(curblock, Tax)):
+                        yDiff = y1-y0
+                        xCenter = (x0 + x1)/2
+                        canvas.create_text(xCenter, y0 + yDiff - (margin), text = f'{curblock.name}',
+                                font = "Arial 8 bold", fill = "black")
+                        canvas.create_text(xCenter, y0 + yDiff - margin2, 
+                            text = f'Pay: ${abs(curblock.price)}',
+                            font = "Arial 8 bold", fill = "black")
+                        
+
+            '''else:
+                    yDiff = y1-y0
+                    xCenter = (x0 + x1)/2
+                    canvas.create_text(xCenter, y0 + yDiff - margin3, 
+                        text = f'{curblock.name}',
+                        font = "Arial 5 bold ", fill = "black")
+                    canvas.create_text(xCenter, y0 + yDiff - margin2, 
+                        text = f'Price: ${abs(curblock.price)}',
+                        font = "Arial 5 bold", fill = "black")'''
+            '''if(isinstance(curblock, SpecialCards)):
+                yDiff = y1-y0
+                xCenter = (x0 + x1)/2
+                #print("curblock name: ", curblock.name)
+                if curblock.name == "Chance":
+                    canvas.create_text(xCenter, y0 + yDiff - (margin4), text = f'{curblock.name}',
+                        font = "Arial 8 bold", fill = "black")
+                    canvas.create_text(xCenter, y0 + yDiff - margin/2, text = "?",
+                        font = "Arial 24 bold", fill = "orange")'''
+    print(app.boardCoordinates[0])
+    print(app.boardCoordinates[0][6] == app.boardCoordinates[0][7])
+    
+                    
+
+
+    
+
+
+    
+    
+    
+
 
 
 
