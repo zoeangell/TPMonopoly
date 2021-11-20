@@ -2,6 +2,7 @@ from cmu_112_graphics import *
 import random
 from block import *
 from gameplay import *
+from player import *
 
 def appStarted(app):
     app.boardWidth = 500
@@ -12,15 +13,14 @@ def appStarted(app):
     app.boardCoordinates = []
     app.board = []
     app.nBlocks = 9
+    app.inJail = None
+    app.justVisiting = None
+    app.players = []
     createBoardCoordinates(app)
     createBoard(app)
-    
-def keyPressed(app, event):
-    if (event.key == "Space"):
-        leftColCoordinates(app)
+    jailCoordinates(app)
+    playMonopoly(app)
 
-#def timerFired(app): ##I don't know if this is a bad solution
-    #createBoardCoordinates(app)
 
 def redrawAll(app, canvas):
     drawBoard(app, canvas)
@@ -53,6 +53,10 @@ def drawBoard(app, canvas):
     drawSpecialBlocks(app,canvas)
     drawSideBlockDesign(app, canvas)
     drawTopBlockDesign(app, canvas)
+    drawPlayerBoard(app, canvas, app.players[0])
+    drawPlayerBoard(app, canvas, app.players[1])
+    drawPlayerInfo(app,canvas,app.players[0],(app.marginSide, app.marginSide))
+    drawPlayerInfo(app,canvas,app.players[1],(app.marginSide,2*app.marginSide))
  
 def createBoardCoordinates(app):
     #Creating a 2D list of the blocks coordinates
@@ -64,6 +68,7 @@ def createBoardCoordinates(app):
     app.boardCoordinates.append(row2)
     col2 = rightColCoordinates(app)
     app.boardCoordinates.append(col2)
+    print(app.boardCoordinates)
 
 def drawInnerBoard(app, canvas):
     #Draws the inside of the board meaning the monopoly and special cards
@@ -392,6 +397,7 @@ def drawSideBlockDesign(app, canvas):
                     
                         
 def drawTopBlockDesign(app, canvas):
+    #Drawing the design on the rows of blocks
     margin = 25
     margin2 = 5
     margin3 = 50
@@ -458,6 +464,61 @@ def drawTopBlockDesign(app, canvas):
                         canvas.create_text(xCenter, y0 + yDiff - margin2, 
                             text = f'Price: ${abs(curblock.price)}',
                             font = "Arial 5 bold", fill = "black")
+
+def getCenterOfBlock(app, blockNum):
+    #Gives the position of the center of the block for the player to move to
+    cols = len(app.board[0])
+    row = blockNum // cols
+    col = blockNum % cols
+    x0, y0, x1, y1 = app.board[row][col].location
+    centerX = (x0 + x1)/2
+    centerY = (y0 + y1)/2
+    return ((centerX, centerY))
+
+def getCenter(app, pos):
+    x0, y0, x1, y1 = pos
+    centerX = (x0 + x1)/2
+    centerY = (y0 + y1)/2
+    return ((centerX, centerY))
+
+def jailCoordinates(app):
+    #sets the coordinates of the in jail/just vising block
+    x0, y0, x1, y1 = app.board[1][0].location
+    centerY = (y0 + y1)/2
+    app.inJail = (x0, y0, x1, centerY)
+    app.justVisiting = (x0, centerY, x1, y1)
+
+def playMonopoly(app):
+    startPosition1 = getCenterOfBlock(app, 0)
+    offset = 10
+    startPosition2 = (startPosition1[0] + offset, startPosition1[1] + offset)
+    player1 = Player("Player 1", app.board, startPosition1, "aquamarine")
+    player2 = Player("Player 2", app.board, startPosition2, "magenta")
+    app.players.extend([player1, player2])
+
+def drawPlayerBoard(app, canvas, player):
+    cx, cy = player.position
+    radius = 5
+    canvas.create_oval(cx - radius, cy - radius, cx + radius, cy + radius, 
+        fill = player.color, outline = "black")
+
+def drawPlayerInfo(app, canvas, player, position):
+    x, y = position
+    canvas.create_text(x, y, text = f'{player.name}:', font = "Arial 24 bold",
+        fill = 'black')
+    offset, radius = 80, 20
+    cx = x + offset
+    canvas.create_oval(cx - radius, y - radius, cx + radius, y + radius, 
+        fill = player.color, outline = "black")
+    canvas.create_text(cx + 2*offset, y, text = f'Bank Account: ${player.bankaccount}',
+        fill = "black", font = "Arial 24 bold")
+    
+
+
+
+
+    
+
 
                 
   
