@@ -390,9 +390,24 @@ def drawSideBlockDesign(app, canvas):
 
                     
                         
-
-            else:
+def drawTopBlockDesign(app, canvas):
+    margin = 25
+    margin2 = 5
+    margin3 = 50
+    margin4 = 30
+    for row in range(len(app.board)):
+         for col in range(1, len(app.board[0])):
+            curblock = app.board[row][col]
+            x0, y0, x1, y1 = curblock.location
+            if(row % 2 == 0):
+                if(curblock.color != None):
                     yDiff = y1-y0
+                    xCenter = (x0 + x1)/2
+                    canvas.create_rectangle(x0, y0, x1, y0 + yDiff/6, fill = curblock.color,
+                        outline = "black")
+                    
+
+                    '''yDiff = y1-y0
                     xCenter = (x0 + x1)/2
                     canvas.create_text(xCenter, y0 + yDiff - margin3, 
                         text = f'{curblock.name}',
@@ -408,7 +423,7 @@ def drawSideBlockDesign(app, canvas):
                             canvas.create_text(xCenter, y0 + yDiff - (margin4), text = f'{curblock.name}',
                                 font = "Arial 8 bold", fill = "black")
                             canvas.create_text(xCenter, y0 + yDiff - margin/2, text = "?",
-                                ont = "Arial 24 bold", fill = "orange")
+                                ont = "Arial 24 bold", fill = "orange")'''
   
     
                     
