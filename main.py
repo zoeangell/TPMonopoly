@@ -51,7 +51,7 @@ def drawBoard(app, canvas):
     drawBlocks(app, canvas)
     drawInnerBoard(app, canvas)
     drawSpecialBlocks(app,canvas)
-    drawBlockDesign(app, canvas)
+    drawSideBlockDesign(app, canvas)
  
 def createBoardCoordinates(app):
     #Creating a 2D list of the blocks coordinates
@@ -63,7 +63,6 @@ def createBoardCoordinates(app):
     app.boardCoordinates.append(row2)
     col2 = rightColCoordinates(app)
     app.boardCoordinates.append(col2)
-    print(app.boardCoordinates)
 
 def drawInnerBoard(app, canvas):
     #Draws the inside of the board meaning the monopoly and special cards
@@ -273,8 +272,7 @@ def createBoard(app):
         chance1, vermontAve, ctAve])
 
     col1 = []
-    '''canvas.create_rectangle(app.marginSide, app.marginTop+app.boardWidth - app.innerMargin,
-        app.marginSide + app.innerMargin, app.marginTop + app.boardWidth, outline = "black")'''
+
     jailLocation = (app.marginSide, app.marginTop+app.boardWidth - 
         app.innerMargin,app.marginSide + app.innerMargin, app.marginTop + 
             app.boardWidth)
@@ -335,9 +333,9 @@ def createBoard(app):
         parkPlace, luxTax, boardwalk])
 
     app.board.extend([row1, col1, row2, col2])
-    print("len of board",len(app.board))
+    #print("len of board",len(app.board))
 
-def drawBlockDesign(app, canvas):
+def drawSideBlockDesign(app, canvas):
     #Filling in the blocks on the outside of the board
     margin = 25
     margin2 = 5
@@ -371,20 +369,29 @@ def drawBlockDesign(app, canvas):
                             name = curblock.name.split()
                             canvas.create_text(xCenter, y0 + yDiff - (margin4), text = name[0],
                                 font = "Arial 8 bold", fill = "black")
-                            canvas.create_text(xCenter, y0 + yDiff - (margin4), text = name[1],
+                            canvas.create_text(xCenter, y0 + yDiff - (margin-margin2), text = name[1],
                                 font = "Arial 8 bold", fill = "black")
-                            
                     if(isinstance(curblock, Tax)):
                         yDiff = y1-y0
                         xCenter = (x0 + x1)/2
-                        canvas.create_text(xCenter, y0 + yDiff - (margin), text = f'{curblock.name}',
+                        canvas.create_text(xCenter, y0 + yDiff - (margin4), text = f'{curblock.name}',
                                 font = "Arial 8 bold", fill = "black")
                         canvas.create_text(xCenter, y0 + yDiff - margin2, 
                             text = f'Pay: ${abs(curblock.price)}',
                             font = "Arial 8 bold", fill = "black")
+                    if(isinstance(curblock, Utility) or isinstance(curblock, Railroad)):
+                        yDiff = y1-y0
+                        xCenter = (x0 + x1)/2
+                        canvas.create_text(xCenter, y0 + yDiff - (margin4), text = f'{curblock.name}',
+                                font = "Arial 8 bold", fill = "black")
+                        canvas.create_text(xCenter, y0 + yDiff - margin2, 
+                            text = f'Price: ${abs(curblock.price)}',
+                            font = "Arial 8 bold", fill = "black")
+
+                    
                         
 
-            '''else:
+            else:
                     yDiff = y1-y0
                     xCenter = (x0 + x1)/2
                     canvas.create_text(xCenter, y0 + yDiff - margin3, 
@@ -392,18 +399,17 @@ def drawBlockDesign(app, canvas):
                         font = "Arial 5 bold ", fill = "black")
                     canvas.create_text(xCenter, y0 + yDiff - margin2, 
                         text = f'Price: ${abs(curblock.price)}',
-                        font = "Arial 5 bold", fill = "black")'''
-            '''if(isinstance(curblock, SpecialCards)):
-                yDiff = y1-y0
-                xCenter = (x0 + x1)/2
-                #print("curblock name: ", curblock.name)
-                if curblock.name == "Chance":
-                    canvas.create_text(xCenter, y0 + yDiff - (margin4), text = f'{curblock.name}',
-                        font = "Arial 8 bold", fill = "black")
-                    canvas.create_text(xCenter, y0 + yDiff - margin/2, text = "?",
-                        font = "Arial 24 bold", fill = "orange")'''
-    print(app.boardCoordinates[0])
-    print(app.boardCoordinates[0][6] == app.boardCoordinates[0][7])
+                        font = "Arial 5 bold", fill = "black")
+                    if(isinstance(curblock, SpecialCards)):
+                        yDiff = y1-y0
+                        xCenter = (x0 + x1)/2
+                        #print("curblock name: ", curblock.name)
+                        if curblock.name == "Chance":
+                            canvas.create_text(xCenter, y0 + yDiff - (margin4), text = f'{curblock.name}',
+                                font = "Arial 8 bold", fill = "black")
+                            canvas.create_text(xCenter, y0 + yDiff - margin/2, text = "?",
+                                ont = "Arial 24 bold", fill = "orange")
+  
     
                     
 
