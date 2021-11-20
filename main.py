@@ -52,6 +52,7 @@ def drawBoard(app, canvas):
     drawInnerBoard(app, canvas)
     drawSpecialBlocks(app,canvas)
     drawSideBlockDesign(app, canvas)
+    drawTopBlockDesign(app, canvas)
  
 def createBoardCoordinates(app):
     #Creating a 2D list of the blocks coordinates
@@ -405,25 +406,60 @@ def drawTopBlockDesign(app, canvas):
                     xCenter = (x0 + x1)/2
                     canvas.create_rectangle(x0, y0, x1, y0 + yDiff/6, fill = curblock.color,
                         outline = "black")
-                    
-
-                    '''yDiff = y1-y0
-                    xCenter = (x0 + x1)/2
-                    canvas.create_text(xCenter, y0 + yDiff - margin3, 
-                        text = f'{curblock.name}',
-                        font = "Arial 5 bold ", fill = "black")
+                    canvas.create_text(xCenter, y0 + margin, 
+                            text = f'{curblock.name}',
+                            font = "Arial 5 bold", fill = "black")
                     canvas.create_text(xCenter, y0 + yDiff - margin2, 
-                        text = f'Price: ${abs(curblock.price)}',
-                        font = "Arial 5 bold", fill = "black")
-                    if(isinstance(curblock, SpecialCards)):
+                            text = f'Price: ${abs(curblock.price)}',
+                            font = "Arial 5 bold", fill = "black")
+                if(isinstance(curblock, SpecialCards)):
+                    yDiff = y1-y0
+                    xCenter = (x0 + x1)/2
+                    if curblock.name == "Chance":
+                        canvas.create_text(xCenter, y0 + margin/2 , 
+                            text = f'{curblock.name}',
+                            font = "Arial 5 bold", fill = "black")
+                        canvas.create_text(xCenter, 
+                            y0 + yDiff - margin - margin2, text = "?",
+                            font = "Arial 50 bold", fill = "orange")
+                    else:
+                        name = curblock.name.split()
+                        canvas.create_text(xCenter, 
+                            y0 + margin/2, text = name[0],
+                            font = "Arial 5 bold", fill = "black")
+                        canvas.create_text(xCenter, 
+                            y0 + yDiff - (margin3) -margin2, text = name[1],
+                                font = "Arial 5 bold", fill = "black")
+                if(isinstance(curblock, Tax)):
                         yDiff = y1-y0
                         xCenter = (x0 + x1)/2
-                        #print("curblock name: ", curblock.name)
-                        if curblock.name == "Chance":
-                            canvas.create_text(xCenter, y0 + yDiff - (margin4), text = f'{curblock.name}',
-                                font = "Arial 8 bold", fill = "black")
-                            canvas.create_text(xCenter, y0 + yDiff - margin/2, text = "?",
-                                ont = "Arial 24 bold", fill = "orange")'''
+                        canvas.create_text(xCenter, y0 + margin/2, 
+                            text = f'{curblock.name}',
+                            font = "Arial 5 bold", fill = "black")
+                        canvas.create_text(xCenter, y0 + yDiff - margin4 - margin2, 
+                            text = "Pay: 10% or ",
+                            font = "Arial 5 bold", fill = "black")
+                        canvas.create_text(xCenter, y0 + yDiff - margin4 + margin2, 
+                            text = f'${abs(curblock.price)}',
+                            font = "Arial 5 bold", fill = "black")
+                if(isinstance(curblock, Utility) or isinstance(curblock, Railroad)):
+                        yDiff = y1-y0
+                        xCenter = (x0 + x1)/2
+                        if(isinstance(curblock, Railroad)):
+                            name = curblock.name.split()
+                            canvas.create_text(xCenter, y0 + margin/2, text = name[0],
+                                font = "Arial 5 bold", fill = "black")
+                            canvas.create_text(xCenter, y0 + margin/2 + margin2,
+                                text = name[1],
+                                font = "Arial 5 bold", fill = "black")
+                        else:
+                            canvas.create_text(xCenter, y0 + margin/2, text = f'{curblock.name}',
+                                font = "Arial 5 bold", fill = "black")
+                        canvas.create_text(xCenter, y0 + yDiff - margin2, 
+                            text = f'Price: ${abs(curblock.price)}',
+                            font = "Arial 5 bold", fill = "black")
+
+                
   
     
                     
