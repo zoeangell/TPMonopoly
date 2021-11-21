@@ -8,11 +8,11 @@ class Player(object):
         self.position = position
         self.color = color
         
-    def move(self, distance):
+    def curBlock(self):
         x, y = self.position
         print("x: ", x, "y: ", y)
         curblock = 0
-        totalBlocks = len(self.board) * len(self.board[0])
+        #totalBlocks = len(self.board) * len(self.board[0])
         #moves the player one space
         for row in range(len(self.board)):
             for col in range(len(self.board[0])):
@@ -21,9 +21,13 @@ class Player(object):
                 if x >= bx0 and y >= by0 and x <= bx1 and y <= by1:
                     curblock = 10*row + col 
                     print("hey")
-        newblock = (curblock + distance)%totalBlocks
-        return newblock
+        print("curblock: ", curblock)
+        return curblock
+        #newblock = (curblock + distance)%totalBlocks
+        #return newblock
         #return (curblock, newblock)
+    
+
 
     
 
