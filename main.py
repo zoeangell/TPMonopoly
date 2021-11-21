@@ -17,6 +17,7 @@ def appStarted(app):
     app.inJail = None
     app.justVisiting = None
     app.players = []
+    app.newblock = None
     app.curPlayer = None
     createBoardCoordinates(app)
     createBoard(app)
@@ -24,8 +25,28 @@ def appStarted(app):
     playMonopoly(app)
 
 def keyPressed(app, event):
-    #if event.key == "Left" and 
-    pass
+    #Need to fix the weird behavior on the corners
+    if app.curPlayer != None:
+        curblock = app.curPlayer.curBlock()
+        print("curblock: ", curblock) 
+        row = curblock // 10
+        if curblock != app.newblock:
+            if ((event.key == "Left" and row == 0) or 
+                (event.key == "Up" and row  == 1) or
+                (event.key == "Right" and row == 2) or
+                (event.key == "Down" and row ==3)):
+                app.curPlayer.position = getCenterOfBlock(app, (curblock+1)%40, 
+                app.curPlayer)
+        '''elif ((event.key == "Right" and row == 0) or 
+            (event.key == "Down" and row == 1) or
+            (event.key == "Left" and row == 2) or
+            (event.key == "Up" and row ==3)):
+            if curblock - 1 >= 0: 
+                curblock -= 1
+                app.curPlayer.position = getCenterOfBlock(app, (curblock), 
+                app.curPlayer)'''
+            
+
 
 def redrawAll(app, canvas):
     drawBoard(app, canvas)
@@ -480,11 +501,11 @@ def getCenterOfBlock(app, blockNum, player):
     centerX = (x0 + x1)/2
     centerY = (y0 + y1)/2
     if player == None:
-        return ((centerX, centerY))
-    if "1" in player.name:
-        return ((centerX + offset, centerY + offset))
-    elif "2" in player.name:
         return ((centerX - offset, centerY - offset))
+    if "1" in player.name:
+        return ((centerX - offset, centerY - offset))
+    elif "2" in player.name:
+        return ((centerX + offset, centerY + offset))
 
 def getCenter(app, pos):
     x0, y0, x1, y1 = pos
@@ -502,13 +523,16 @@ def jailCoordinates(app):
 def playMonopoly(app):
     offset = 5
     startPosition1 = getCenterOfBlock(app, 0, None)
-    startPosition2 = (startPosition1[0] + offset, startPosition1[1] + offset)
+    print(startPosition1)
+    #test = getCenterOfBlock(app, 2, None)
+    #print("test: ", test)
+    startPosition2 = (startPosition1[0] + 2*offset, startPosition1[1] + 2*offset)
     player1 = Player("Player 1", app.board, startPosition1, "aquamarine")
     player2 = Player("Player 2", app.board, startPosition2, "magenta")
     app.players.extend([player1, player2])
-    #movePlayer(app, player1, 4)
-    #movePlayer(app, player2, 4)
-    app.curPlayer = player1
+    '''movePlayer(app, player1, 4)
+    movePlayer(app, player2, 4)
+    app.curPlayer = player2''' #just testing code
 
 
 def drawPlayerBoard(app, canvas, player):
@@ -530,9 +554,8 @@ def drawPlayerInfo(app, canvas, player, position):
             font = "Arial 24 bold")
 
 def movePlayer(app, player, distance):
-    newblock = player.move(distance)
-    print(newblock)
-    player.position = getCenterOfBlock(app, newblock, player)
+    app.newblock = player.curBlock() + distance
+    #player.position = getCenterOfBlock(app, newblock, player)
     
     
 
