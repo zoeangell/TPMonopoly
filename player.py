@@ -10,7 +10,8 @@ class Player(object):
         
     def move(self, distance):
         x, y = self.position
-        curblock = None
+        print("x: ", x, "y: ", y)
+        curblock = 0
         totalBlocks = len(self.board) * len(self.board[0])
         #moves the player one space
         for row in range(len(self.board)):
