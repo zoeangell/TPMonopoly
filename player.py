@@ -1,5 +1,6 @@
 #This is the player class
 from block import *
+import random
 class Player(object):
     def __init__(self, name, board, position, color):
         self.name = name
@@ -26,6 +27,14 @@ class Player(object):
         #newblock = (curblock + distance)%totalBlocks
         #return newblock
         #return (curblock, newblock)
+
+    def roll(self):
+        toss1 = random.randint(1,6)
+        toss2 = random.randint(1,6)
+        return ((toss1, toss2))
+
+    def __repr__(self):
+        return self.name
     
 
 
