@@ -5,6 +5,7 @@ from gameplay import *
 from player import *
 
 def appStarted(app):
+    #in gameplay, add a variable curplayer to do all the actions on
     app.boardWidth = 500
     app.marginSide = 50
     app.marginTop = 150
@@ -16,11 +17,15 @@ def appStarted(app):
     app.inJail = None
     app.justVisiting = None
     app.players = []
+    app.curPlayer = None
     createBoardCoordinates(app)
     createBoard(app)
     jailCoordinates(app)
     playMonopoly(app)
 
+def keyPressed(app, event):
+    #if event.key == "Left" and 
+    pass
 
 def redrawAll(app, canvas):
     drawBoard(app, canvas)
@@ -465,15 +470,21 @@ def drawTopBlockDesign(app, canvas):
                             text = f'Price: ${abs(curblock.price)}',
                             font = "Arial 5 bold", fill = "black")
 
-def getCenterOfBlock(app, blockNum):
+def getCenterOfBlock(app, blockNum, player):
     #Gives the position of the center of the block for the player to move to
+    offset = 5
     cols = len(app.board[0])
     row = blockNum // cols
     col = blockNum % cols
     x0, y0, x1, y1 = app.board[row][col].location
     centerX = (x0 + x1)/2
     centerY = (y0 + y1)/2
-    return ((centerX, centerY))
+    if player == None:
+        return ((centerX, centerY))
+    if "1" in player.name:
+        return ((centerX + offset, centerY + offset))
+    elif "2" in player.name:
+        return ((centerX - offset, centerY - offset))
 
 def getCenter(app, pos):
     x0, y0, x1, y1 = pos
@@ -489,13 +500,16 @@ def jailCoordinates(app):
     app.justVisiting = (x0, centerY, x1, y1)
 
 def playMonopoly(app):
-    startPosition1 = getCenterOfBlock(app, 0)
-    offset = 10
+    offset = 5
+    startPosition1 = getCenterOfBlock(app, 0, None)
     startPosition2 = (startPosition1[0] + offset, startPosition1[1] + offset)
     player1 = Player("Player 1", app.board, startPosition1, "aquamarine")
     player2 = Player("Player 2", app.board, startPosition2, "magenta")
     app.players.extend([player1, player2])
-    movePlayer(app, player1, 4)
+    #movePlayer(app, player1, 4)
+    #movePlayer(app, player2, 4)
+    app.curPlayer = player1
+
 
 def drawPlayerBoard(app, canvas, player):
     cx, cy = player.position
@@ -518,7 +532,7 @@ def drawPlayerInfo(app, canvas, player, position):
 def movePlayer(app, player, distance):
     newblock = player.move(distance)
     print(newblock)
-    #player.position = getCenterOfBlock(newblock)
+    player.position = getCenterOfBlock(app, newblock, player)
     
     
 
