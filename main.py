@@ -530,6 +530,8 @@ def playMonopoly(app):
     player1 = Player("Player 1", app.board, startPosition1, "aquamarine")
     player2 = Player("Player 2", app.board, startPosition2, "magenta")
     app.players.extend([player1, player2])
+    
+    gamePlay(app)
     '''movePlayer(app, player1, 4)
     movePlayer(app, player2, 4)
     app.curPlayer = player2''' #just testing code
@@ -556,6 +558,39 @@ def drawPlayerInfo(app, canvas, player, position):
 def movePlayer(app, player, distance):
     app.newblock = player.curBlock() + distance
     #player.position = getCenterOfBlock(app, newblock, player)
+
+def gamePlay(app):
+    #Function for the game play algorithm
+    endgame = False
+    player1, player2 = app.players[0], app.players[1]
+    turnRoll(app, player1, player2)
+    print("curPlayer: ", app.curPlayer)
+    app.showMessage(f'{app.curPlayer.name} rolled the higher score. They will go first. Enter c to continue')
+    #while (not endgame):
+        #app.showMessage(f"It's {app.curPlayer.name}'s turn.")
+        #roll = app.curPlayer.roll()
+
+       
+
+def turnRoll(app, player1, player2):
+    #The player who rolls a higher combined score gets to go first
+    p1CombinedRoll, p2CombinedRoll = 0, 0
+    while(p1CombinedRoll == p2CombinedRoll):
+        player1roll = player1.roll()
+        print("player1roll ", player1roll )
+        player2roll = player2.roll()
+        print("player2roll ", player2roll )
+        p1CombinedRoll = player1roll[0] + player1roll[1]
+        p2CombinedRoll = player2roll[0] + player2roll[1]
+        if(p1CombinedRoll > p2CombinedRoll):
+            app.curPlayer = player1
+        elif(p1CombinedRoll < p2CombinedRoll):
+            app.curPlayer = player2
+
+
+
+runApp(width=700, height=700)
+
     
     
 
@@ -596,4 +631,3 @@ def movePlayer(app, player, distance):
 
     
 
-runApp(width=700, height=700)
