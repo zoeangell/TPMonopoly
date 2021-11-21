@@ -495,6 +495,7 @@ def playMonopoly(app):
     player1 = Player("Player 1", app.board, startPosition1, "aquamarine")
     player2 = Player("Player 2", app.board, startPosition2, "magenta")
     app.players.extend([player1, player2])
+    movePlayer(app, player1, 4)
 
 def drawPlayerBoard(app, canvas, player):
     cx, cy = player.position
@@ -510,8 +511,15 @@ def drawPlayerInfo(app, canvas, player, position):
     cx = x + offset
     canvas.create_oval(cx - radius, y - radius, cx + radius, y + radius, 
         fill = player.color, outline = "black")
-    canvas.create_text(cx + 2*offset, y, text = f'Bank Account: ${player.bankaccount}',
-        fill = "black", font = "Arial 24 bold")
+    canvas.create_text(cx + 2*offset, y, text = 
+        f'Bank Account: ${player.bankaccount}',fill = "black", 
+            font = "Arial 24 bold")
+
+def movePlayer(app, player, distance):
+    newblock = player.move(distance)
+    print(newblock)
+    #player.position = getCenterOfBlock(newblock)
+    
     
 
 
