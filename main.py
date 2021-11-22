@@ -18,10 +18,13 @@ def appStarted(app):
     app.justVisiting = None
     app.newblock = None
     app.curPlayer = None
+    app.otherPlayer = None
     app.endgame = False
     app.newGame = True
     app.newTurn = False
     app.playerMoved = False
+    app.blockActions = False
+    app.roll = None
     createBoardCoordinates(app)
     createBoard(app)
     app.totalBlocks = len(app.board) * len(app.board[0])
@@ -55,6 +58,8 @@ def timerFired(app):
             updatePlayerPos(app)
             app.playerMoved = False
         if(app.playerMoved):
+            blockActions(app)
+        if(app.blockActions):
             switchPlayer(app)
 
 
@@ -390,6 +395,7 @@ def drawSideBlockDesign(app, canvas):
          for col in range(1, len(app.board[0])):
             curblock = app.board[row][col]
             x0, y0, x1, y1 = curblock.location
+            drawOwnership(app, canvas, curblock)
             if(row % 2 == 1):
                     if(curblock.color != None):
                         yDiff = y1-y0
@@ -433,7 +439,22 @@ def drawSideBlockDesign(app, canvas):
                             text = f'Price: ${abs(curblock.price)}',
                             font = "Arial 8 bold", fill = "black")
 
-                    
+def drawOwnership(app, canvas, curblock):
+    #This draws a little dot on the block showing ownership.
+    x0, y0, x1, y1 = curblock.location
+    margin2 = 5
+    if curblock.ownership != None:
+        print("hey I own this property.")
+        owner = curblock.ownership
+        if owner == "Player 1":
+            canvas.create_oval(x1 - 2*margin2, y1 - 3*margin2,
+            x1 - margin2, y1 - 2*margin2, fill = app.player1.color, 
+                outline = "black")  
+        elif owner == "Player 2":
+            canvas.create_oval(x1 - 2*margin2, y1 - 3*margin2,
+            x1 - margin2, y1 - 2*margin2, fill = app.player2.color, 
+                outline = "black") 
+
                         
 def drawTopBlockDesign(app, canvas):
     #Drawing the design on the rows of blocks
@@ -445,6 +466,7 @@ def drawTopBlockDesign(app, canvas):
          for col in range(1, len(app.board[0])):
             curblock = app.board[row][col]
             x0, y0, x1, y1 = curblock.location
+            drawOwnership(app, canvas, curblock)
             if(row % 2 == 0):
                 if(curblock.color != None):
                     yDiff = y1-y0
@@ -457,6 +479,7 @@ def drawTopBlockDesign(app, canvas):
                     canvas.create_text(xCenter, y0 + yDiff - margin2, 
                             text = f'Price: ${abs(curblock.price)}',
                             font = "Arial 5 bold", fill = "black")
+                    
                 if(isinstance(curblock, SpecialCards)):
                     yDiff = y1-y0
                     xCenter = (x0 + x1)/2
@@ -573,6 +596,7 @@ def updatePlayerPos(app):
     app.showMessage(f"It's {app.curPlayer.name}'s turn.")
     roll = app.curPlayer.roll()
     rollTotal = roll[0] + roll[1]
+    app.roll = rollTotal
     app.showMessage(f'You rolled {roll}. Use the error kets to move yourself {rollTotal} spaces.')
     print("Current Player Before Move: ", app.curPlayer)
     movePlayer(app, app.curPlayer, rollTotal)
@@ -595,8 +619,10 @@ def turnRoll(app, player1, player2):
         p2CombinedRoll = player2roll[0] + player2roll[1]
         if(p1CombinedRoll > p2CombinedRoll):
             app.curPlayer = player1
+            app.otherPlayer = player2
         elif(p1CombinedRoll < p2CombinedRoll):
             app.curPlayer = player2
+            app.otherPlayer = player1
 
 def startGame(app):
     turnRoll(app, app.player1, app.player2)
@@ -604,11 +630,54 @@ def startGame(app):
     #print("curPlayer: ", app.curPlayer)
     app.showMessage(f'{app.curPlayer.name} rolled the higher score. They will go first.')
 
+def blockActions(app):
+    #This is where the player buys property and pays rent when applicable.
+    curblockNum = app.curPlayer.curBlock()
+    curblock = app.curPlayer.getCurBlock(curblockNum)
+    if app.curPlayer.isOwned(app.otherPlayer, curblock) == None:
+        if (app.curPlayer.canBuy(curblock)):
+            answer = app.getUserInput(f"{curblock.name} is avaible for purchase. Would you like to buy the property? (Yes/No)")
+            if answer != None and answer.lower() == "yes":
+                app.curPlayer.buyBlock(curblock)
+                app.showMessage(f'You now own {curblock.name}.')
+    elif app.curPlayer.isOwned(app.otherPlayer, curblock ) == False:
+        if isinstance(curblock, Utility):
+            tax = app.curPlayer.payUtilityTax(curblock, app.roll, app.otherPlayer)
+            app.showMessage(f'You paid ${tax} in tax.')
+        elif isinstance(curblock, Railroad):
+            tax = app.curPlayer.payRailroadRent(curblock, app.otherPlayer)
+            app.showMessage(f'You paid ${tax} in tax.')
+        else:
+            app.curPlayer.payRent(curblock)
+            app.showMessage(f'You paid ${abs(curblock.rent())} in rent.')
+
+    if isinstance(curblock, Tax):
+        if curblock.name == "Income Tax":
+            answer = app.getUserInput("You need to pay income tax. Would you like to pay 10% of your income or $200?")
+            if answer == None or "10" in answer:
+                app.curPlayer.payIncomeTax()
+            else:
+                app.curPlayer.payTax(curblock)
+        else:
+            app.curPlayer.payTax(curblock)
+            app.showMessage(f'You paid ${abs(curblock.price)} in tax.')
+
+        
+
+    app.blockActions = True
+
 def switchPlayer(app):
     #This switches the curPlayer when the turn is done
-    if app.curPlayer == app.player1: app.curPlayer = app.player2
-    else: app.curPlayer = app.player1
+    if app.curPlayer.bankaccount <= 0:
+        app.endgame = True
+    if app.curPlayer == app.player1: 
+        app.curPlayer = app.player2
+        app.otherPlayer = app.player1
+    else: 
+        app.curPlayer = app.player1
+        app.otherPlayer = app.player2
     app.newTurn = True
+    app.blockActions = False
 
 runApp(width=700, height=700)
 
