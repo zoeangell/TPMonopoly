@@ -9,6 +9,11 @@ class Block(object):
         self.property = []
         self.ownership = None
     
+    def rent(self):
+        #This sets the rent of a block. The rent without any properties is 10% of price
+        if self.price != None:
+            return 0.1 * (self.price)
+    
     #create a function to add a property
 
     #create a function to change ownership
@@ -36,8 +41,9 @@ class Tax(Block):
         self.property = None
         self.ownership = None
 
-    def getRent(self): #might need to change this for the 10% rule for income tax
+    def rent(self): #might need to change this for the 10% rule for income tax
         return self.price
+
 class Utility(Block):
     def __init__(self, location, color, name, price):
         super().__init__(location, color, name, price)
@@ -49,8 +55,12 @@ class Corner(Block):
         self.property = None
         self.ownership = None
         self.gTJ = gTJ
+    
+    def rent(self):
+        return None
 
     #Write a rent function
+
 
 
 
