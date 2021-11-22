@@ -7,6 +7,7 @@ class Player(object):
         self.board = board
         self.bankaccount = 1500
         self.position = position
+        self.land = []
         self.color = color
         
     def curBlock(self):
@@ -35,6 +36,27 @@ class Player(object):
 
     def __repr__(self):
         return self.name
+
+    def buyBlock(self, block):
+        #Allows player to buy land
+        if (isinstance(block, SpecialCards) or isinstance(block, Tax) or
+            isinstance(block, Corner)): return None
+        else:
+            self.bankaccount += block.price #plus because I made the prices -
+            block.ownership = self.name
+            self.land.append(block)
+    
+    def payRent(self, block):
+        self.bankaccount += block.rent()
+
+    def isOwned(self, other, block):
+        #Checks if the someone owns the block. If None then no rent and
+        #it can be bought.
+        if block.ownership == self.name: return True
+        elif other.ownership == other.name: return False
+        return None
+
+
     
 
 
