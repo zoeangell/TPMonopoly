@@ -16,11 +16,15 @@ def appStarted(app):
     app.nBlocks = 9
     app.inJail = None
     app.justVisiting = None
-    app.players = []
     app.newblock = None
     app.curPlayer = None
+    app.endgame = False
+    app.newGame = True
+    app.newTurn = False
+    app.playerMoved = False
     createBoardCoordinates(app)
     createBoard(app)
+    app.totalBlocks = len(app.board) * len(app.board[0])
     jailCoordinates(app)
     playMonopoly(app)
 
@@ -30,22 +34,31 @@ def keyPressed(app, event):
         curblock = app.curPlayer.curBlock()
         print("curblock: ", curblock) 
         row = curblock // 10
-        if curblock != app.newblock:
+        if curblock == app.newblock:
+            app.playerMoved = True
+        else:
             if ((event.key == "Left" and row == 0) or 
                 (event.key == "Up" and row  == 1) or
                 (event.key == "Right" and row == 2) or
                 (event.key == "Down" and row ==3)):
                 app.curPlayer.position = getCenterOfBlock(app, (curblock+1)%40, 
                 app.curPlayer)
-        '''elif ((event.key == "Right" and row == 0) or 
-            (event.key == "Down" and row == 1) or
-            (event.key == "Left" and row == 2) or
-            (event.key == "Up" and row ==3)):
-            if curblock - 1 >= 0: 
-                curblock -= 1
-                app.curPlayer.position = getCenterOfBlock(app, (curblock), 
-                app.curPlayer)'''
-            
+
+def timerFired(app):
+    if(app.endgame):
+        app.showMessage(f'Game over.')
+    else:
+        if app.newGame:
+            startGame(app)
+            app.newGame = False
+        if(app.newTurn):
+            updatePlayerPos(app)
+            app.playerMoved = False
+        if(app.playerMoved):
+            switchPlayer(app)
+
+
+
 
 
 def redrawAll(app, canvas):
@@ -79,10 +92,10 @@ def drawBoard(app, canvas):
     drawSpecialBlocks(app,canvas)
     drawSideBlockDesign(app, canvas)
     drawTopBlockDesign(app, canvas)
-    drawPlayerBoard(app, canvas, app.players[0])
-    drawPlayerBoard(app, canvas, app.players[1])
-    drawPlayerInfo(app,canvas,app.players[0],(app.marginSide, app.marginSide))
-    drawPlayerInfo(app,canvas,app.players[1],(app.marginSide,2*app.marginSide))
+    drawPlayerBoard(app, canvas, app.player1)
+    drawPlayerBoard(app, canvas, app.player2)
+    drawPlayerInfo(app,canvas,app.player1,(app.marginSide, app.marginSide))
+    drawPlayerInfo(app,canvas,app.player2,(app.marginSide,2*app.marginSide))
  
 def createBoardCoordinates(app):
     #Creating a 2D list of the blocks coordinates
@@ -527,15 +540,8 @@ def playMonopoly(app):
     #test = getCenterOfBlock(app, 2, None)
     #print("test: ", test)
     startPosition2 = (startPosition1[0] + 2*offset, startPosition1[1] + 2*offset)
-    player1 = Player("Player 1", app.board, startPosition1, "aquamarine")
-    player2 = Player("Player 2", app.board, startPosition2, "magenta")
-    app.players.extend([player1, player2])
-    
-    gamePlay(app)
-    '''movePlayer(app, player1, 4)
-    movePlayer(app, player2, 4)
-    app.curPlayer = player2''' #just testing code
-
+    app.player1 = Player("Player 1", app.board, startPosition1, "aquamarine")
+    app.player2 = Player("Player 2", app.board, startPosition2, "magenta")
 
 def drawPlayerBoard(app, canvas, player):
     cx, cy = player.position
@@ -556,19 +562,24 @@ def drawPlayerInfo(app, canvas, player, position):
             font = "Arial 24 bold")
 
 def movePlayer(app, player, distance):
-    app.newblock = player.curBlock() + distance
-    #player.position = getCenterOfBlock(app, newblock, player)
+    app.newblock = (player.curBlock() + distance) % app.totalBlocks
+    print("newblock: ", app.newblock, "curblock: ", player.curBlock())
 
-def gamePlay(app):
+#These are the functions for each step of player's turn
+def updatePlayerPos(app):
     #Function for the game play algorithm
-    endgame = False
-    player1, player2 = app.players[0], app.players[1]
-    turnRoll(app, player1, player2)
-    print("curPlayer: ", app.curPlayer)
-    app.showMessage(f'{app.curPlayer.name} rolled the higher score. They will go first. Enter c to continue')
-    #while (not endgame):
-        #app.showMessage(f"It's {app.curPlayer.name}'s turn.")
-        #roll = app.curPlayer.roll()
+    print("Current Player: ",app.curPlayer)
+    #player1, player2 = app.players[0], app.players[1]
+    app.showMessage(f"It's {app.curPlayer.name}'s turn.")
+    roll = app.curPlayer.roll()
+    rollTotal = roll[0] + roll[1]
+    app.showMessage(f'You rolled {roll}. Use the error kets to move yourself {rollTotal} spaces.')
+    print("Current Player Before Move: ", app.curPlayer)
+    movePlayer(app, app.curPlayer, rollTotal)
+    app.newTurn = False
+    '''if app.curPlayer == app.player1: app.curPlayer = app.player2
+    else: app.curPlayer = app.player1'''
+    print("New Current Player: ", app.curPlayer)
 
        
 
@@ -587,7 +598,17 @@ def turnRoll(app, player1, player2):
         elif(p1CombinedRoll < p2CombinedRoll):
             app.curPlayer = player2
 
+def startGame(app):
+    turnRoll(app, app.player1, app.player2)
+    app.newTurn = True
+    #print("curPlayer: ", app.curPlayer)
+    app.showMessage(f'{app.curPlayer.name} rolled the higher score. They will go first.')
 
+def switchPlayer(app):
+    #This switches the curPlayer when the turn is done
+    if app.curPlayer == app.player1: app.curPlayer = app.player2
+    else: app.curPlayer = app.player1
+    app.newTurn = True
 
 runApp(width=700, height=700)
 
