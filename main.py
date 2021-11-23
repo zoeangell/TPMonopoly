@@ -417,6 +417,7 @@ def drawSideBlockDesign(app, canvas):
             x0, y0, x1, y1 = curblock.location
             drawOwnership(app, canvas, curblock)
             drawHouse(app, canvas, curblock)
+            drawHotel(app, canvas, curblock)
             if(row % 2 == 1):
                     if(curblock.color != None):
                         yDiff = y1-y0
@@ -477,12 +478,11 @@ def drawOwnership(app, canvas, curblock):
                 outline = "black") 
 
 def drawHouse(app, canvas, curblock):
-    
     x0, y0, x1, y1 = curblock.location
     centerY = (y0+y1)/2
     margin = 5
     owner = curblock.ownership
-    if curblock.house > 0:
+    if curblock.house > 0 and curblock.house < 4:
         for i in range(curblock.house):
             if owner == "Player 1":
                 canvas.create_rectangle(x0 + margin*(1+i) + margin*i, centerY - margin, 
@@ -492,6 +492,22 @@ def drawHouse(app, canvas, curblock):
                 canvas.create_rectangle(x0 + margin*(1+i) + margin*i, centerY - margin, 
                     x0 + margin*(2+i) + margin*i, centerY + margin, fill = app.player2.color, 
                 outline = "black")
+
+def drawHotel(app, canvas, curblock):
+    x0, y0, x1, y1 = curblock.location
+    centerY = (y0+y1)/2
+    margin = 5
+    owner = curblock.ownership
+    if curblock.hotel > 0:
+        if owner == "Player 1":
+            canvas.create_rectangle(x0 + margin, centerY, x0 + 6*margin, 
+                centerY - margin, fill = app.player1.color, 
+                    outline = "black")
+        elif owner == "Player 2":
+            canvas.create_rectangle(x0 + margin, centerY, x0 + 6*margin, 
+             centerY - margin, fill = app.player2.color, 
+                outline = "black")
+            
 
 
 
@@ -508,6 +524,7 @@ def drawTopBlockDesign(app, canvas):
             x0, y0, x1, y1 = curblock.location
             drawOwnership(app, canvas, curblock)
             drawHouse(app, canvas, curblock)
+            drawHotel(app, canvas, curblock)
             if(row % 2 == 0):
                 if(curblock.color != None):
                     yDiff = y1-y0
@@ -622,8 +639,9 @@ def drawPlayerInfo(app, canvas, player, position):
     canvas.create_oval(cx - radius, y - radius, cx + radius, y + radius, 
         fill = player.color, outline = "black")
     canvas.create_text(cx + 2*offset, y, text = 
-        f'Bank Account: ${player.bankaccount}',fill = "black", 
+        f'Bank Account: ${(player.bankaccount)}',fill = "black", 
             font = "Arial 24 bold")
+    
 
 def movePlayer(app, player, distance):
     app.newblock = (player.curBlock() + distance) % app.totalBlocks
@@ -703,9 +721,11 @@ def blockActions(app):
             app.curPlayer.payTax(curblock)
             app.showMessage(f'You paid ${abs(curblock.price)} in tax.')
 
-    testBuyHouses(app)
+    #testBuyHouses(app) -- for demo purposes
+    #testBuyHotel(app) -- for demo purposes
     buyOpponentsProperty(app)
     buyHouse(app)
+    buyHotel(app)
     
         
 
@@ -725,6 +745,8 @@ def buyOpponentsProperty(app):
                     block = app.curPlayer.getBlock(blockName)
                     if block == None:
                         app.showMessage("The name you entered wasn't valid.")
+                    elif block.house != 0 or block.hotel != 0:
+                        app.showMessage("You can't buy property has a house or hotel built on it.")
                     else:
                         flag = False
             if block != None:
@@ -743,7 +765,7 @@ def buyHouse(app):
         flag = True
         for prop in land:
             print("prop: ", prop)
-            if prop not in app.curPlayer.land: 
+            if prop not in app.curPlayer.land or prop.hotel != 0: 
                 flag = False
                 break
         if flag:
@@ -752,21 +774,65 @@ def buyHouse(app):
     if houseOptions != []:
         answer = app.getUserInput(f"Do you want to buy a house in the {houseOptions} blocks?")
         if answer != None and "yes" in answer.lower():
+            flag = True
             while(flag):
                 blockName = app.getUserInput("Please enter the name of the property that you want to buy a house on.")
-                if blockName == None: flag = False
+                if blockName == None: 
+                    break
                 else:
                     block = app.curPlayer.getBlock(blockName)
                     if block == None or block.color not in houseOptions:
                         app.showMessage("The name you entered wasn't valid.")
+                    elif block.house >= 3:
+                        app.showMessage("You can't build any more houses on this property.")
                     else:
                         flag = False
-            app.curPlayer.buyHouse(block)
-            app.showMessage(f'You now own a house on {block.name}')
+            if not flag:
+                app.curPlayer.buyHouse(block)
+                app.showMessage(f'You now own a house on {block.name}')
+
+def buyHotel(app):
+    #This function lets a player buy a hotel if qualified
+    hotelOptions = []
+    print("curPlayer.land: ", app.curPlayer.land)
+    for key in app.colorDict:
+        land = app.colorDict[key]
+        print("land: ", land)
+        flag = True
+        for prop in land:
+            print("prop: ", prop)
+            if prop not in app.curPlayer.land or prop.house != 3: 
+                flag = False
+                break
+        if flag:
+            hotelOptions.append(key)
+    if hotelOptions != []:
+            answer = app.getUserInput(f"Do you want to buy a hotel in the {hotelOptions} blocks?")
+            if answer != None and "yes" in answer.lower():
+                flag = True
+                while(flag):
+                    blockName = app.getUserInput("Please enter the name of the property that you want to buy a hotel on.")
+                    if blockName == None: 
+                        break
+                    else:
+                        block = app.curPlayer.getBlock(blockName)
+                        if block == None or block.color not in hotelOptions:
+                            app.showMessage("The name you entered wasn't valid.")
+                        elif block.hotel == 1:
+                            app.showMessage("You can't build multiple hotels on the same property.")
+                        else:
+                            flag = False
+                if not flag:
+                    app.curPlayer.buyHotel(block)
+                    app.showMessage(f'You now own a hotel on {block.name}')
+    
+
 
 
 def switchPlayer(app):
     #This switches the curPlayer when the turn is done
+    print(f'{app.curPlayer.name}: ', app.curPlayer.bankaccount)
+    print(f'{app.otherPlayer.name}: ', app.otherPlayer.bankaccount)
     if app.curPlayer.bankaccount <= 0:
         app.endgame = True
     if app.curPlayer == app.player1: 
@@ -780,6 +846,7 @@ def switchPlayer(app):
 
 
 def testBuyHouses(app):
+    #buying houses work
     app.curPlayer.land = []
     app.otherPlayer.land = []
     for row in range(len(app.board)):
@@ -788,6 +855,13 @@ def testBuyHouses(app):
             if curblock.color != None:
                 app.player2.land.append(curblock)
                 curblock.ownership = app.player2.name
+
+def testBuyHotel(app):
+    #shows that buying hotels works
+    testBuyHouses(app)
+    app.board[0][1].house = 3
+    app.board[0][3].house = 3
+
 
 
 runApp(width=700, height=700)
