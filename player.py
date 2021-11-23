@@ -67,6 +67,7 @@ class Player(object):
         return None
 
     def payTax(self, block):
+        #Pays basic rent of a block
         self.bankaccount += block.rent()
 
     def payIncomeTax(self):
@@ -84,6 +85,8 @@ class Player(object):
         return tax
 
     def payRailroadTax(self, block, other):
+        #Tax for a railroad depends on the number of railroads that the other
+        #player owns. This calculates that.
         count, tax = self.countRailroads(other), 0
         if count == 1: tax = 25
         elif count == 2: tax = 50
@@ -94,16 +97,52 @@ class Player(object):
 
 
     def countUtilities(self, other):
+        #Counts the number of utilities that the other player owns
         count = 0
         for block in other.land:
             if isinstance(block, Utility): count +=1
+            print(count)
         return count
 
     def countRailroads(self, other):
+        #Counts the number of railroads that the other player owns
         count = 0
         for block in other.land:
             if isinstance(block, Railroad): count +=1
         return count
+
+    def getBlock(self, blockName):
+        for row in range(len(self.board)):
+            for col in range(len(self.board[0])):
+                curName = self.board[row][col].name
+                if curName in blockName:
+                    return self.board[row][col]
+        return None
+
+    def buyOpponentsProp(self, block, other):
+        self.land.append(block)
+        price = 2*block.price
+        self.bankaccount += price
+        other.land.remove(block)
+        block.ownership = self.name
+
+    def buyHouse(self, block):
+        #allows the player to buy a house
+        blockNum = self.blockNum(block)
+        row = blockNum // len(self.board[0])
+        price = (row+1) * 50
+        self.bankaccount -= price
+        block.house += 1
+
+    def blockNum(self, block):
+        #This returns the number of the block
+        for row in range(len(self.board)):
+            for col in range(len(self.board[0])):
+                curblock = self.board[row][col]
+                if curblock.name == block.name:
+                    blockNum = row*len(self.board[0]) + col
+        return blockNum
+
 
 
     
