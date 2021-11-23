@@ -11,9 +11,13 @@ class Block(object):
         self.ownership = None
     
     def rent(self):
-        #This sets the rent of a block. The rent without any properties is 10% of price
-        if self.price != None:
-            return 0.1 * (self.price)
+        #This sets the rent of a block. 
+        if self.price != None and self.hotel != 0:
+            return self.price + 4*self.price
+        elif self.house > 0:
+            return self.price + self.price*self.house
+        else:
+            return self.price*0.1
     
     #create a function to add a property
     def __repr__(self):
@@ -44,9 +48,7 @@ class Tax(Block):
 
     def rent(self): 
         #The rent of a normal block adjusted for the presence of houses/hotels
-        if self.hotel != 0:
-            return self.price + 4*self.price
-        return self.price + self.price*self.house
+        return self.price()
 
 class Utility(Block):
     def __init__(self, location, color, name, price):
