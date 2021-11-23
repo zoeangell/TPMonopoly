@@ -19,6 +19,7 @@ def appStarted(app):
     app.otherPlayer = None
     app.endgame = False
     app.newGame = True
+    app.passedGo = False
     app.newTurn = False
     app.colorDict = {}
     app.playerMoved = False
@@ -34,7 +35,7 @@ def keyPressed(app, event):
     #Need to fix the weird behavior on the corners
     if app.curPlayer != None:
         curblock = app.curPlayer.curBlock()
-        print("curblock: ", curblock) 
+        #("curblock: ", curblock) 
         row = curblock // 10
         if curblock == app.newblock:
             app.playerMoved = True
@@ -58,6 +59,7 @@ def timerFired(app):
             app.playerMoved = False
         if app.curPlayer.curBlock() == app.newblock:
             app.playerMoved = True
+            if(app.passedGo): app.curPlayer.collect200()
             app.newTurn = False
         if(app.playerMoved):
             blockActions(app)
@@ -114,7 +116,7 @@ def createBoardCoordinates(app):
     app.boardCoordinates.append(row2)
     col2 = rightColCoordinates(app)
     app.boardCoordinates.append(col2)
-    print(app.boardCoordinates)
+    #(app.boardCoordinates)
 
 def drawInnerBoard(app, canvas):
     #Draws the inside of the board meaning the monopoly and special cards
@@ -394,13 +396,13 @@ def createColorDict(app):
         for col in range(len(app.board[0])):
             curblock = app.board[row][col]
             if curblock.color != None:
-                print(curblock.name)
+                #print(curblock.name)
                 app.colorDict[curblock.color] = app.colorDict.get(curblock.color, 0)
                 if app.colorDict[curblock.color] == 0:
                     app.colorDict[curblock.color] = [curblock]
                 else:
                     app.colorDict[curblock.color].append(curblock)
-    print ("app.colorDict: ",app.colorDict)
+    #print ("app.colorDict: ",app.colorDict)
 
 
 def drawSideBlockDesign(app, canvas):
@@ -611,14 +613,18 @@ def jailCoordinates(app):
 def playMonopoly(app):
     offset = 5
     startPosition1 = getCenterOfBlock(app, 0, None)
-    print(startPosition1)
+    #(startPosition1)
     #test = getCenterOfBlock(app, 2, None)
     #print("test: ", test)
-    startPosition2 = (startPosition1[0] + 2*offset, startPosition1[1] + 2*offset)
+    startPosition2 = (startPosition1[0] + 2*offset, startPosition1[1] + 3*offset)
     app.player1 = Player("Player 1", app.board, startPosition1, "aquamarine")
     app.player2 = Player("Player 2", app.board, startPosition2, "magenta")
 
 def drawPlayerBoard(app, canvas, player):
+    if app.curPlayer.board:
+        color = "black"
+    else:
+        color = player.color
     cx, cy = player.position
     radius = 5
     canvas.create_oval(cx - radius, cy - radius, cx + radius, cy + radius, 
@@ -639,22 +645,41 @@ def drawPlayerInfo(app, canvas, player, position):
 
 def movePlayer(app, player, distance):
     app.newblock = (player.curBlock() + distance) % app.totalBlocks
-    print("newblock: ", app.newblock, "curblock: ", player.curBlock())
+    app.passedGo = False
+    checkPassGo(app, player.curBlock(), app.newblock)
+    #print("newblock: ", app.newblock, "curblock: ", player.curBlock())
 
+def checkPassGo(app, curblock, newblock):
+    curRow = curblock // len(app.board[0])
+    newRow = newblock // len(app.board[0])
+    if curRow != 0 and newRow == 0:
+        app.passedGo = True
 #These are the functions for each step of player's turn
 def updatePlayerPos(app):
     #Function for the game play algorithm
-    print("Current Player: ",app.curPlayer)
+    #print("Current Player: ",app.curPlayer)
     #player1, player2 = app.players[0], app.players[1]
     app.showMessage(f"It's {app.curPlayer.name}'s turn.")
-    roll = app.curPlayer.roll()
-    rollTotal = roll[0] + roll[1]
-    app.roll = rollTotal
-    app.showMessage(f'You rolled {roll}. Use the arrow keys to move yourself {rollTotal} spaces.')
-    print("Current Player Before Move: ", app.curPlayer)
-    movePlayer(app, app.curPlayer, rollTotal)
+    if app.curPlayer.jail:
+        answer = app.getUserInput("Would you like to pay a $50 fine to get out of jail?")
+        if answer != None and "yes" in answer.lower():
+            app.curPlayer.payJailFine()
+            app.showMessage("You are out of jail!")
+            app.curPlayer.jail = False
+        else:
+            roll = app.curPlayer.roll()
+            if roll[0] == roll[1]: 
+                app.showMessage("You rolled snake eyes! You are out of jail.")
+                app.curPlayer.jail = False
+    else:
+        roll = app.curPlayer.roll()
+        rollTotal = roll[0] + roll[1]
+        app.roll = rollTotal
+        app.showMessage(f'You rolled {roll}. Use the arrow keys to move yourself {rollTotal} spaces.')
+        #print("Current Player Before Move: ", app.curPlayer)
+        movePlayer(app, app.curPlayer, rollTotal)
     app.newTurn = False
-    print("New Current Player: ", app.curPlayer)
+    #print("New Current Player: ", app.curPlayer)
 
        
 
@@ -663,9 +688,9 @@ def turnRoll(app, player1, player2):
     p1CombinedRoll, p2CombinedRoll = 0, 0
     while(p1CombinedRoll == p2CombinedRoll):
         player1roll = player1.roll()
-        print("player1roll ", player1roll )
+        #print("player1roll ", player1roll )
         player2roll = player2.roll()
-        print("player2roll ", player2roll )
+        #print("player2roll ", player2roll )
         p1CombinedRoll = player1roll[0] + player1roll[1]
         p2CombinedRoll = player2roll[0] + player2roll[1]
         if(p1CombinedRoll > p2CombinedRoll):
@@ -680,11 +705,18 @@ def startGame(app):
     app.newTurn = True
     #print("curPlayer: ", app.curPlayer)
     app.showMessage(f'{app.curPlayer.name} rolled the higher score. They will go first.')
+    
 
 def blockActions(app):
     #This is where the player buys property and pays rent when applicable.
     curblockNum = app.curPlayer.curBlock()
     curblock = app.curPlayer.getCurBlock(curblockNum)
+    #send player to Jail
+    if curblock.name == "Go To Jail":
+        app.curPlayer.position = app.inJail
+        app.curPlayer.jail = True
+        #app.curPlayer.color = "black"
+        app.showMessage("You are now in jail!")
     if app.curPlayer.isOwned(app.otherPlayer, curblock) == None:
         if (app.curPlayer.canBuy(curblock)):
             answer = app.getUserInput(f"{curblock.name} is avaible for purchase. Would you like to buy the property? (Yes/No)")
@@ -693,6 +725,7 @@ def blockActions(app):
                 app.showMessage(f'You now own {curblock.name}.')
     elif app.curPlayer.isOwned(app.otherPlayer, curblock ) == False:
         if isinstance(curblock, Utility):
+            print("roll: ", app.roll)
             tax = app.curPlayer.payUtilityTax(curblock, app.roll, app.otherPlayer)
             app.showMessage(f'You paid ${tax} in tax.')
         elif isinstance(curblock, Railroad):
@@ -716,12 +749,10 @@ def blockActions(app):
     #testBuyHouses(app)
     #testBuyHotel(app) 
     #testRailroadTax(app)
+    #testUtilityTax(app)
     buyOpponentsProperty(app)
     buyHouse(app)
     buyHotel(app)
-    
-    
-        
 
     app.blockActions = True
 
@@ -752,18 +783,20 @@ def buyOpponentsProperty(app):
                 if block in app.otherPlayer.land:
                     app.curPlayer.buyOpponentsProp(block, app.otherPlayer)
                     app.showMessage(f'You now own {block.name}.')
+            print("curPlayer.land: ", app.curPlayer.land)
+            print("other Player land: ", app.otherPlayer.land)
 
 def buyHouse(app):
     #Let's the player buy a house
     houseOptions = []
-    print(app.board[0][1] in app.curPlayer.land)
-    print("curPlayer.land: ", app.curPlayer.land)
+    #print(app.board[0][1] in app.curPlayer.land)
+    #print("curPlayer.land: ", app.curPlayer.land)
     for key in app.colorDict:
         land = app.colorDict[key]
-        print("land: ", land)
+        #print("land: ", land)
         flag, flag2 = True, True
         for prop in land:
-            print("prop: ", prop)
+            #print("prop: ", prop)
             if prop not in app.curPlayer.land or prop.hotel != 0: 
                 flag = False
                 break
@@ -771,7 +804,7 @@ def buyHouse(app):
                 flag2 = False
         if flag and not flag2:
             houseOptions.append(key)
-    print("houseOptions: ", houseOptions)
+    #print("houseOptions: ", houseOptions)
     if houseOptions != []:
         answer = app.getUserInput(f"Do you want to buy a house in the {houseOptions} blocks? Enter yes/no")
         if answer != None and "yes" in answer.lower():
@@ -796,13 +829,13 @@ def buyHouse(app):
 def buyHotel(app):
     #This function lets a player buy a hotel if qualified
     hotelOptions = []
-    print("curPlayer.land: ", app.curPlayer.land)
+    #print("curPlayer.land: ", app.curPlayer.land)
     for key in app.colorDict:
         land = app.colorDict[key]
-        print("land: ", land)
+        #print("land: ", land)
         flag = True
         for prop in land:
-            print("prop: ", prop)
+            #print("prop: ", prop)
             if prop not in app.curPlayer.land or prop.house != 3: 
                 flag = False
                 break
@@ -831,8 +864,8 @@ def buyHotel(app):
 
 def switchPlayer(app):
     #This switches the curPlayer when the turn is done
-    print(f'{app.curPlayer.name}: ', app.curPlayer.bankaccount)
-    print(f'{app.otherPlayer.name}: ', app.otherPlayer.bankaccount)
+    #print(f'{app.curPlayer.name}: ', app.curPlayer.bankaccount)
+    #print(f'{app.otherPlayer.name}: ', app.otherPlayer.bankaccount)
     if app.curPlayer.bankaccount <= 0:
         app.endgame = True
     if app.curPlayer == app.player1: 
@@ -865,16 +898,27 @@ def testBuyHotel(app):
             if curblock.color != None and curblock.hotel == 0:
                 curblock.house = 3
 
-def testRailroadTax(app):
+#def testRailroadTax(app):
     #shows that the railroad tax is working
+    #for row in range(len(app.board)):
+        #for col in range(len(app.board[0])):
+            #curblock = app.board[row][col]
+            #if isinstance(curblock, Railroad):
+                #curblock.ownership = app.player1.name
+                #app.player1.land.append(curblock)
+    #app.player1.land.pop()
+    #app.player1.land.pop()
+
+'''def testUtilityTax(app):
     for row in range(len(app.board)):
         for col in range(len(app.board[0])):
             curblock = app.board[row][col]
-            if isinstance(curblock, Railroad):
+            if isinstance(curblock, Utility):
                 curblock.ownership = app.player1.name
                 app.player1.land.append(curblock)
-    app.curPlayer = app.player2
-    movePlayer(app, app.curPlayer, 5)
+    app.player1.land.pop()
+    #app.player1.land.pop()'''
+
             
 
     
