@@ -618,17 +618,18 @@ def playMonopoly(app):
     #print("test: ", test)
     startPosition2 = (startPosition1[0] + 2*offset, startPosition1[1] + 3*offset)
     app.player1 = Player("Player 1", app.board, startPosition1, "aquamarine")
+    print("Player 1's starting jail position", app.player1.jail)
     app.player2 = Player("Player 2", app.board, startPosition2, "magenta")
 
 def drawPlayerBoard(app, canvas, player):
-    if app.curPlayer.board:
+    if player.jail:
         color = "black"
     else:
         color = player.color
     cx, cy = player.position
     radius = 5
     canvas.create_oval(cx - radius, cy - radius, cx + radius, cy + radius, 
-        fill = player.color, outline = "black")
+        fill = color, outline = "black")
 
 def drawPlayerInfo(app, canvas, player, position):
     x, y = position
@@ -660,17 +661,23 @@ def updatePlayerPos(app):
     #print("Current Player: ",app.curPlayer)
     #player1, player2 = app.players[0], app.players[1]
     app.showMessage(f"It's {app.curPlayer.name}'s turn.")
+    print(app.curPlayer.jail)
     if app.curPlayer.jail:
         answer = app.getUserInput("Would you like to pay a $50 fine to get out of jail?")
         if answer != None and "yes" in answer.lower():
             app.curPlayer.payJailFine()
             app.showMessage("You are out of jail!")
             app.curPlayer.jail = False
+            app.playerMoved = True
+            app.newTurn = True
+            
         else:
             roll = app.curPlayer.roll()
             if roll[0] == roll[1]: 
                 app.showMessage("You rolled snake eyes! You are out of jail.")
                 app.curPlayer.jail = False
+                app.playerMoved = True
+                app.newTurn = True
     else:
         roll = app.curPlayer.roll()
         rollTotal = roll[0] + roll[1]
@@ -678,7 +685,8 @@ def updatePlayerPos(app):
         app.showMessage(f'You rolled {roll}. Use the arrow keys to move yourself {rollTotal} spaces.')
         #print("Current Player Before Move: ", app.curPlayer)
         movePlayer(app, app.curPlayer, rollTotal)
-    app.newTurn = False
+        app.newTurn = False
+
     #print("New Current Player: ", app.curPlayer)
 
        
@@ -704,6 +712,8 @@ def startGame(app):
     turnRoll(app, app.player1, app.player2)
     app.newTurn = True
     #print("curPlayer: ", app.curPlayer)
+    #app.curPlayer = app.player1 #comment this to return to normal
+    #app.otherPlayer = app.player2 #comment this to return to normal
     app.showMessage(f'{app.curPlayer.name} rolled the higher score. They will go first.')
     
 
@@ -712,10 +722,16 @@ def blockActions(app):
     curblockNum = app.curPlayer.curBlock()
     curblock = app.curPlayer.getCurBlock(curblockNum)
     #send player to Jail
+    margin = 5
     if curblock.name == "Go To Jail":
-        app.curPlayer.position = app.inJail
+        x0, y0, x1, y1 = app.inJail
+        centerX = (x0 + x1)/2
+        centerY = (y0 + y1)/2
+        if app.curPlayer == app.player1:
+            app.curPlayer.position = centerX - 5, centerY - 5
+        else:
+            app.curPlayer.position = centerX + 5, centerY + 5
         app.curPlayer.jail = True
-        #app.curPlayer.color = "black"
         app.showMessage("You are now in jail!")
     if app.curPlayer.isOwned(app.otherPlayer, curblock) == None:
         if (app.curPlayer.canBuy(curblock)):
@@ -746,7 +762,7 @@ def blockActions(app):
             app.curPlayer.payTax(curblock)
             app.showMessage(f'You paid ${abs(curblock.price)} in tax.')
 
-    #testBuyHouses(app)
+    testBuyHouses(app)
     #testBuyHotel(app) 
     #testRailroadTax(app)
     #testUtilityTax(app)
