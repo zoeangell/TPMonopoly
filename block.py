@@ -6,7 +6,8 @@ class Block(object):
         self.color = color
         self.name = name
         self.price = price
-        self.property = []
+        self.house = 0
+        self.hotel = 0
         self.ownership = None
     
     def rent(self):
@@ -15,8 +16,8 @@ class Block(object):
             return 0.1 * (self.price)
     
     #create a function to add a property
-
-    #create a function to change ownership
+    def __repr__(self):
+        return self.name
 
 class SpecialCards(Block):
     #Block subclass to handle community chest and chance
