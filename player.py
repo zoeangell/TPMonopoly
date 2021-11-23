@@ -134,6 +134,15 @@ class Player(object):
         self.bankaccount -= price
         block.house += 1
 
+    def buyHotel(self, block):
+        #Allows the player to buy a hotel
+        blockNum = self.blockNum(block)
+        row = blockNum // len(self.board[0])
+        price = (row+1) * 50
+        self.bankaccount -= price
+        block.house = 0
+        block.hotel += 1
+
     def blockNum(self, block):
         #This returns the number of the block
         for row in range(len(self.board)):
