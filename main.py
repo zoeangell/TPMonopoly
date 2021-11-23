@@ -22,6 +22,7 @@ def appStarted(app):
     app.endgame = False
     app.newGame = True
     app.newTurn = False
+    app.colorDict = {}
     app.playerMoved = False
     app.blockActions = False
     app.roll = None
@@ -46,6 +47,9 @@ def keyPressed(app, event):
                 (event.key == "Down" and row ==3)):
                 app.curPlayer.position = getCenterOfBlock(app, (curblock+1)%40, 
                 app.curPlayer)
+
+    '''if event.key == "h":
+        testBuyHouses(app)'''
 
 def timerFired(app):
     if(app.endgame):
@@ -384,6 +388,22 @@ def createBoard(app):
 
     app.board.extend([row1, col1, row2, col2])
     #print("len of board",len(app.board))
+    createColorDict(app)
+
+def createColorDict(app):
+    #Creates a dictionary mapping color to properties with that color
+    for row in range(len(app.board)):
+        for col in range(len(app.board[0])):
+            curblock = app.board[row][col]
+            if curblock.color != None:
+                print(curblock.name)
+                app.colorDict[curblock.color] = app.colorDict.get(curblock.color, 0)
+                if app.colorDict[curblock.color] == 0:
+                    app.colorDict[curblock.color] = [curblock]
+                else:
+                    app.colorDict[curblock.color].append(curblock)
+    print ("app.colorDict: ",app.colorDict)
+
 
 def drawSideBlockDesign(app, canvas):
     #Filling in the blocks on the outside of the board
@@ -396,6 +416,7 @@ def drawSideBlockDesign(app, canvas):
             curblock = app.board[row][col]
             x0, y0, x1, y1 = curblock.location
             drawOwnership(app, canvas, curblock)
+            drawHouse(app, canvas, curblock)
             if(row % 2 == 1):
                     if(curblock.color != None):
                         yDiff = y1-y0
@@ -444,7 +465,7 @@ def drawOwnership(app, canvas, curblock):
     x0, y0, x1, y1 = curblock.location
     margin2 = 5
     if curblock.ownership != None:
-        print("hey I own this property.")
+        #print("hey I own this property.")
         owner = curblock.ownership
         if owner == "Player 1":
             canvas.create_oval(x1 - 2*margin2, y1 - 3*margin2,
@@ -454,6 +475,25 @@ def drawOwnership(app, canvas, curblock):
             canvas.create_oval(x1 - 2*margin2, y1 - 3*margin2,
             x1 - margin2, y1 - 2*margin2, fill = app.player2.color, 
                 outline = "black") 
+
+def drawHouse(app, canvas, curblock):
+    
+    x0, y0, x1, y1 = curblock.location
+    centerY = (y0+y1)/2
+    margin = 5
+    owner = curblock.ownership
+    if curblock.house > 0:
+        for i in range(curblock.house):
+            if owner == "Player 1":
+                canvas.create_rectangle(x0 + margin*(1+i) + margin*i, centerY - margin, 
+                    x0 + margin*(2+i) + margin*i, centerY + margin, fill = app.player1.color, 
+                outline = "black")
+            elif owner == "Player 2":
+                canvas.create_rectangle(x0 + margin*(1+i) + margin*i, centerY - margin, 
+                    x0 + margin*(2+i) + margin*i, centerY + margin, fill = app.player2.color, 
+                outline = "black")
+
+
 
                         
 def drawTopBlockDesign(app, canvas):
@@ -467,6 +507,7 @@ def drawTopBlockDesign(app, canvas):
             curblock = app.board[row][col]
             x0, y0, x1, y1 = curblock.location
             drawOwnership(app, canvas, curblock)
+            drawHouse(app, canvas, curblock)
             if(row % 2 == 0):
                 if(curblock.color != None):
                     yDiff = y1-y0
@@ -645,7 +686,7 @@ def blockActions(app):
             tax = app.curPlayer.payUtilityTax(curblock, app.roll, app.otherPlayer)
             app.showMessage(f'You paid ${tax} in tax.')
         elif isinstance(curblock, Railroad):
-            tax = app.curPlayer.payRailroadRent(curblock, app.otherPlayer)
+            tax = app.curPlayer.payRailroadTax(curblock, app.otherPlayer)
             app.showMessage(f'You paid ${tax} in tax.')
         else:
             app.curPlayer.payRent(curblock)
@@ -662,9 +703,67 @@ def blockActions(app):
             app.curPlayer.payTax(curblock)
             app.showMessage(f'You paid ${abs(curblock.price)} in tax.')
 
+    testBuyHouses(app)
+    buyOpponentsProperty(app)
+    buyHouse(app)
+    
         
 
     app.blockActions = True
+
+def buyOpponentsProperty(app):
+    #Prompts the player with the opportunity to buy the other player's property
+    flag = True
+    opponentLand = app.otherPlayer.land
+    if len(opponentLand) != 0:
+        message = app.getUserInput(f"Would you like buy any of {app.otherPlayer}'s property at twice the price?")
+        if message != None and "yes" in message.lower():
+            while(flag):
+                blockName = app.getUserInput("Please enter the name of the property that you want to purchase. Hit cancel if you don't want to purchase any property.")
+                if blockName == None: flag = False
+                else:
+                    block = app.curPlayer.getBlock(blockName)
+                    if block == None:
+                        app.showMessage("The name you entered wasn't valid.")
+                    else:
+                        flag = False
+            if block != None:
+                if block in app.otherPlayer.land:
+                    app.curPlayer.buyOpponentsProp(block, app.otherPlayer)
+                    app.showMessage(f'You now own {block.name}.')
+
+def buyHouse(app):
+    #Let's the player buy a house
+    houseOptions = []
+    print(app.board[0][1] in app.curPlayer.land)
+    print("curPlayer.land: ", app.curPlayer.land)
+    for key in app.colorDict:
+        land = app.colorDict[key]
+        print("land: ", land)
+        flag = True
+        for prop in land:
+            print("prop: ", prop)
+            if prop not in app.curPlayer.land: 
+                flag = False
+                break
+        if flag:
+            houseOptions.append(key)
+    print("houseOptions: ", houseOptions)
+    if houseOptions != []:
+        answer = app.getUserInput(f"Do you want to buy a house in the {houseOptions} blocks?")
+        if answer != None and "yes" in answer.lower():
+            while(flag):
+                blockName = app.getUserInput("Please enter the name of the property that you want to buy a house on.")
+                if blockName == None: flag = False
+                else:
+                    block = app.curPlayer.getBlock(blockName)
+                    if block == None or block.color not in houseOptions:
+                        app.showMessage("The name you entered wasn't valid.")
+                    else:
+                        flag = False
+            app.curPlayer.buyHouse(block)
+            app.showMessage(f'You now own a house on {block.name}')
+
 
 def switchPlayer(app):
     #This switches the curPlayer when the turn is done
@@ -678,6 +777,18 @@ def switchPlayer(app):
         app.otherPlayer = app.player2
     app.newTurn = True
     app.blockActions = False
+
+
+def testBuyHouses(app):
+    app.curPlayer.land = []
+    app.otherPlayer.land = []
+    for row in range(len(app.board)):
+        for col in range(len(app.board[0])):
+            curblock = app.board[row][col]
+            if curblock.color != None:
+                app.player2.land.append(curblock)
+                curblock.ownership = app.player2.name
+
 
 runApp(width=700, height=700)
 
