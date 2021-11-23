@@ -1,7 +1,6 @@
 from cmu_112_graphics import *
 import random
 from block import *
-from gameplay import *
 from player import *
 
 def appStarted(app):
