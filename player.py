@@ -40,7 +40,8 @@ class Player(object):
     def roll(self):
         toss1 = random.randint(1,6)
         toss2 = random.randint(1,6)
-        return ((toss1, toss2))
+        return ((toss1, toss2)) #uncomment this to return to normal
+        #return((15, 15)) #comment this to return to normal
 
     def __repr__(self):
         return self.name
@@ -125,9 +126,13 @@ class Player(object):
         return None
 
     def buyOpponentsProp(self, block, other):
+        #Let's a player buy the other player's property at twice the price.
+        #When this happens, originally price of property is returned to original
+        #owner
         self.land.append(block)
         price = 2*block.price
         self.bankaccount += price
+        other.bankaccount -= block.price
         other.land.remove(block)
         block.ownership = self.name
 
