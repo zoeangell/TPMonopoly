@@ -48,7 +48,7 @@ class Tax(Block):
 
     def rent(self): 
         #The rent of a normal block adjusted for the presence of houses/hotels
-        return self.price()
+        return self.price
 
 class Utility(Block):
     def __init__(self, location, color, name, price):
