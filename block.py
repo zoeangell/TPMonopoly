@@ -42,8 +42,11 @@ class Tax(Block):
         self.property = None
         self.ownership = None
 
-    def rent(self): #might need to change this for the 10% rule for income tax
-        return self.price
+    def rent(self): 
+        #The rent of a normal block adjusted for the presence of houses/hotels
+        if self.hotel != 0:
+            return self.price + 4*self.price
+        return self.price + self.price*self.house
 
 class Utility(Block):
     def __init__(self, location, color, name, price):
