@@ -8,12 +8,13 @@ class Player(object):
         self.bankaccount = 1500
         self.position = position
         self.land = []
+        self.jail = False
         self.color = color
         
     def curBlock(self):
         #return curBlock as an int
         x, y = self.position
-        print("x: ", x, "y: ", y)
+        #print("x: ", x, "y: ", y)
         curblock = 0
         #totalBlocks = len(self.board) * len(self.board[0])
         #moves the player one space
@@ -23,8 +24,8 @@ class Player(object):
                 #should work
                 if x >= bx0 and y >= by0 and x <= bx1 and y <= by1:
                     curblock = 10*row + col 
-                    print("hey")
-        print("curblock: ", curblock)
+                    #print("hey")
+        #print("curblock: ", curblock)
         return curblock
         #newblock = (curblock + distance)%totalBlocks
         #return newblock
@@ -105,6 +106,7 @@ class Player(object):
         for block in other.land:
             if isinstance(block, Utility): count +=1
             print(count)
+        #print("Utility Num is: ", count)
         return count
 
     def countRailroads(self, other):
@@ -163,6 +165,12 @@ class Player(object):
             else:
                 availableLand.append(block)
         return availableLand
+    
+    def collect200(self):
+        self.bankaccount += 200
+
+    def payJailFine(self):
+        self.bankaccount -= 50
 
 
 
