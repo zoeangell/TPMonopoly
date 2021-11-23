@@ -4,7 +4,6 @@ from block import *
 from player import *
 
 def appStarted(app):
-    #in gameplay, add a variable curplayer to do all the actions on
     app.boardWidth = 500
     app.marginSide = 50
     app.marginTop = 150
@@ -47,9 +46,6 @@ def keyPressed(app, event):
                 app.curPlayer.position = getCenterOfBlock(app, (curblock+1)%40, 
                 app.curPlayer)
 
-    '''if event.key == "h":
-        testBuyHouses(app)'''
-
 def timerFired(app):
     if(app.endgame):
         app.showMessage(f'Game over.')
@@ -60,6 +56,9 @@ def timerFired(app):
         if(app.newTurn):
             updatePlayerPos(app)
             app.playerMoved = False
+        if app.curPlayer.curBlock() == app.newblock:
+            app.playerMoved = True
+            app.newTurn = False
         if(app.playerMoved):
             blockActions(app)
         if(app.blockActions):
@@ -506,11 +505,7 @@ def drawHotel(app, canvas, curblock):
             canvas.create_rectangle(x0 + margin, centerY, x0 + 6*margin, 
              centerY - margin, fill = app.player2.color, 
                 outline = "black")
-            
-
-
-
-                        
+                                
 def drawTopBlockDesign(app, canvas):
     #Drawing the design on the rows of blocks
     margin = 25
@@ -655,12 +650,10 @@ def updatePlayerPos(app):
     roll = app.curPlayer.roll()
     rollTotal = roll[0] + roll[1]
     app.roll = rollTotal
-    app.showMessage(f'You rolled {roll}. Use the error kets to move yourself {rollTotal} spaces.')
+    app.showMessage(f'You rolled {roll}. Use the arrow keys to move yourself {rollTotal} spaces.')
     print("Current Player Before Move: ", app.curPlayer)
     movePlayer(app, app.curPlayer, rollTotal)
     app.newTurn = False
-    '''if app.curPlayer == app.player1: app.curPlayer = app.player2
-    else: app.curPlayer = app.player1'''
     print("New Current Player: ", app.curPlayer)
 
        
@@ -706,7 +699,7 @@ def blockActions(app):
             tax = app.curPlayer.payRailroadTax(curblock, app.otherPlayer)
             app.showMessage(f'You paid ${tax} in tax.')
         else:
-            app.curPlayer.payRent(curblock)
+            app.curPlayer.payRent(curblock, app.otherPlayer)
             app.showMessage(f'You paid ${abs(curblock.rent())} in rent.')
 
     if isinstance(curblock, Tax):
@@ -720,11 +713,13 @@ def blockActions(app):
             app.curPlayer.payTax(curblock)
             app.showMessage(f'You paid ${abs(curblock.price)} in tax.')
 
-    #testBuyHouses(app) -- for demo purposes
-    #testBuyHotel(app) -- for demo purposes
+    #testBuyHouses(app)
+    #testBuyHotel(app) 
+    #testRailroadTax(app)
     buyOpponentsProperty(app)
     buyHouse(app)
     buyHotel(app)
+    
     
         
 
@@ -733,19 +728,24 @@ def blockActions(app):
 def buyOpponentsProperty(app):
     #Prompts the player with the opportunity to buy the other player's property
     flag = True
-    opponentLand = app.otherPlayer.land
+    #Write a new function property available
+    opponentLand = app.curPlayer.opponentPropAvailable(app.otherPlayer)
     if len(opponentLand) != 0:
         message = app.getUserInput(f"Would you like buy any of {app.otherPlayer}'s property at twice the price?")
         if message != None and "yes" in message.lower():
             while(flag):
                 blockName = app.getUserInput("Please enter the name of the property that you want to purchase. Hit cancel if you don't want to purchase any property.")
-                if blockName == None: flag = False
+                if blockName == None: 
+                    block = None
+                    flag = False
                 else:
                     block = app.curPlayer.getBlock(blockName)
                     if block == None:
                         app.showMessage("The name you entered wasn't valid.")
                     elif block.house != 0 or block.hotel != 0:
                         app.showMessage("You can't buy property has a house or hotel built on it.")
+                    elif block not in opponentLand:
+                        app.showMessage(f"{app.otherPlayer.name} doesn't own that property.")
                     else:
                         flag = False
             if block != None:
@@ -761,17 +761,19 @@ def buyHouse(app):
     for key in app.colorDict:
         land = app.colorDict[key]
         print("land: ", land)
-        flag = True
+        flag, flag2 = True, True
         for prop in land:
             print("prop: ", prop)
             if prop not in app.curPlayer.land or prop.hotel != 0: 
                 flag = False
                 break
-        if flag:
+            elif prop.house < 3:
+                flag2 = False
+        if flag and not flag2:
             houseOptions.append(key)
     print("houseOptions: ", houseOptions)
     if houseOptions != []:
-        answer = app.getUserInput(f"Do you want to buy a house in the {houseOptions} blocks?")
+        answer = app.getUserInput(f"Do you want to buy a house in the {houseOptions} blocks? Enter yes/no")
         if answer != None and "yes" in answer.lower():
             flag = True
             while(flag):
@@ -790,6 +792,7 @@ def buyHouse(app):
                 app.curPlayer.buyHouse(block)
                 app.showMessage(f'You now own a house on {block.name}')
 
+    
 def buyHotel(app):
     #This function lets a player buy a hotel if qualified
     hotelOptions = []
@@ -826,8 +829,6 @@ def buyHotel(app):
                     app.showMessage(f'You now own a hotel on {block.name}')
     
 
-
-
 def switchPlayer(app):
     #This switches the curPlayer when the turn is done
     print(f'{app.curPlayer.name}: ', app.curPlayer.bankaccount)
@@ -858,8 +859,25 @@ def testBuyHouses(app):
 def testBuyHotel(app):
     #shows that buying hotels works
     testBuyHouses(app)
-    app.board[0][1].house = 3
-    app.board[0][3].house = 3
+    for row in range(len(app.board)):
+        for col in range(len(app.board[0])):
+            curblock = app.board[row][col]
+            if curblock.color != None and curblock.hotel == 0:
+                curblock.house = 3
+
+def testRailroadTax(app):
+    #shows that the railroad tax is working
+    for row in range(len(app.board)):
+        for col in range(len(app.board[0])):
+            curblock = app.board[row][col]
+            if isinstance(curblock, Railroad):
+                curblock.ownership = app.player1.name
+                app.player1.land.append(curblock)
+    app.curPlayer = app.player2
+    movePlayer(app, app.curPlayer, 5)
+            
+
+    
 
 
 
