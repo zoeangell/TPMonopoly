@@ -55,9 +55,10 @@ class Player(object):
             isinstance(block, Corner)): return False
         return True
     
-    def payRent(self, block):
+    def payRent(self, block, other):
         #Pays the rent for a owned block
         self.bankaccount += block.rent()
+        other.bankaccount += abs(block.rent())
 
     def isOwned(self, other, block):
         #Checks if the someone owns the block. If None then no rent and
@@ -82,6 +83,7 @@ class Player(object):
         elif count == 2:
             tax = 10*roll
         self.bankaccount -= tax
+        other.bankaccount += tax
         return tax
 
     def payRailroadTax(self, block, other):
@@ -93,6 +95,7 @@ class Player(object):
         elif count == 3: tax = 100
         elif count == 4: tax = 200
         self.bankaccount -= tax
+        other.bankaccount += tax
         return tax
 
 
@@ -151,6 +154,17 @@ class Player(object):
                 if curblock.name == block.name:
                     blockNum = row*len(self.board[0]) + col
         return blockNum
+
+    def opponentPropAvailable(self, other):
+        availableLand = []
+        for block in other.land:
+            if block.house > 0 or block.hotel > 0:
+                continue
+            else:
+                availableLand.append(block)
+        return availableLand
+
+
 
 
 
