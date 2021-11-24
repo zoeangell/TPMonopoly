@@ -3,6 +3,9 @@ import random
 from block import *
 from player import *
 
+###CITATION:
+#The commands app.getUserInput and app.showMessage come from:
+#https://www.cs.cmu.edu/~112/notes/notes-animations-part4.html
 def appStarted(app):
     app.boardWidth = 500
     app.marginSide = 50
@@ -762,7 +765,7 @@ def blockActions(app):
             app.curPlayer.payTax(curblock)
             app.showMessage(f'You paid ${abs(curblock.price)} in tax.')
 
-    testBuyHouses(app)
+    #testBuyHouses(app)
     #testBuyHotel(app) 
     #testRailroadTax(app)
     #testUtilityTax(app)
