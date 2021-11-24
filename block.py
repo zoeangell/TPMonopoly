@@ -31,11 +31,11 @@ class SpecialCards(Block):
         self.property = None
         self.ownership = None
         self.chanceDeck = []
-        self.fillChanceDeck()
+        #self.fillChanceDeck()
         self.cChest = []
-        self.fillcChestDeck()
+        #self.fillcChestDeck()
 
-    def fillcChestDeck(self):
+    '''def fillcChestDeck(self):
         card1 = Card("Bank error in your favor. Collect $200", 200)
         card2 = Card("Doctor's fee. Pay $50", -50)
         card3 = Card("From sale from stock you get $50", 50)
@@ -47,9 +47,9 @@ class SpecialCards(Block):
         card9 = Card("Pay school fees of $50", -50)
         card10 = Card("You have won a beauty contest. Collect $10", 10)
         self.cChest.extend(card1, card2, card3, card4, card5, card6, card7,
-            card8, card9, card10)
+            card8, card9, card10)'''
 
-    def fillChanceDeck(self):
+    '''def fillChanceDeck(self):
         card1 = Card("Advance to Boardwalk", None)
         card2 = Card("Advance to Go and collect $200", 200)
         card3 = Card("Advance to IL Ave.", None)
@@ -60,7 +60,7 @@ class SpecialCards(Block):
         card7 = Card("Advance to Reading Railroad", None)
         card8 = Card("Speeding fine $15", 15)
         card9 = Card("You have been elected Chairman of the Board. Pay $50 to each player", -50)
-        card10 = Card("Your building loan matures. Collect $150", 150)
+        card10 = Card("Your building loan matures. Collect $150", 150)'''
 
 
 class Railroad(Block):
