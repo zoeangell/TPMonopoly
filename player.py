@@ -40,8 +40,8 @@ class Player(object):
     def roll(self):
         toss1 = random.randint(1,6)
         toss2 = random.randint(1,6)
-        return ((toss1, toss2)) #uncomment this to return to normal
-        #return((15, 15)) #comment this to return to normal
+        #return ((toss1, toss2)) #uncomment this to return to normal
+        return((1, 1)) #comment this to return to normal
 
     def __repr__(self):
         return self.name
