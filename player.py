@@ -32,16 +32,33 @@ class Player(object):
         #return (curblock, newblock)
     
     def getCurBlock(self, blockNum):
+        #gets the current block object based on the blockNumber in the board
         row = blockNum // len(self.board[0])
         col = blockNum % len(self.board[0])
         return self.board[row][col]
+
+    def findBlock(self, word):
+        #finds the block based on part of the name
+        matches = 0
+        block = None
+        blockNum = None
+        for row in range(len(self.board)):
+            for col in range(len(self.board[0])):
+                if word in self.board[row][col].name:
+                    block = self.board[row][col]
+                    blockNum = row*len(self.board[0]) + col
+                    matches += 1
+        if matches == 1:
+            return block, blockNum
+        return None, None
+
 
 
     def roll(self):
         toss1 = random.randint(1,6)
         toss2 = random.randint(1,6)
         #return ((toss1, toss2)) #uncomment this to return to normal
-        return((1, 1)) #comment this to return to normal
+        return((3, 4)) #comment this to return to normal
 
     def __repr__(self):
         return self.name
@@ -176,6 +193,23 @@ class Player(object):
 
     def payJailFine(self):
         self.bankaccount -= 50
+
+    def totalHouses(self):
+        #Total houses that a player owns
+        totalHouses = 0
+        for prop in self.land:
+            totalHouses += prop.house
+        print("totalHouses: ", totalHouses)
+        return totalHouses
+
+    def totalHotels(self):
+        #Total hotels that a player owns
+        totalHotels = 0
+        for prop in self.land:
+            totalHotels += prop.hotel
+        print("totalHotels: ", totalHotels)
+        return totalHotels
+
 
 
 
