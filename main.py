@@ -26,11 +26,17 @@ def appStarted(app):
     app.newTurn = False
     app.colorDict = {}
     app.playerMoved = False
-    app.blockActions = False
+    app.blockActions, app.specialBA = False, True
     app.roll = None
+    app.cChestCoordinates = None
+    app.chanceCoordinates = None
+    app.landedOnChance, app.landedOnCChest = False, False
+    app.pickedCard = False
     createBoardCoordinates(app)
     createBoard(app)
     app.totalBlocks = len(app.board) * len(app.board[0])
+    getCChestCoordinates(app)
+    getChanceCoordinates(app)
     jailCoordinates(app)
     playMonopoly(app)
 
@@ -64,13 +70,27 @@ def timerFired(app):
             app.playerMoved = True
             if(app.passedGo): app.curPlayer.collect200()
             app.newTurn = False
-        if(app.playerMoved):
+        if(app.playerMoved and not app.blockActions):
             blockActions(app)
-        if(app.blockActions):
+        if(app.blockActions and app.specialBA):
             switchPlayer(app)
 
 
 
+def mousePressed(app, event):
+    #Decides if the user clicked on the card piles in the center of the board
+    #and if they should be allowed to pick a card.
+    print("This function was called")
+    if app.landedOnChance and not app.pickedCard:
+        x0, y0, x1, y1 = app.chanceCoordinates
+        if event.x >= x0 and event.x <= x1 and event.y >= y0 and event.y <= y1:
+           app.pickedCard = True
+           chanceAction(app)
+    elif app.landedOnCChest and not app.pickedCard:
+        x0, y0, x1, y1 = app.cChestCoordinates
+        if event.x >= x0 and event.x <= x1 and event.y >= y0 and event.y <= y1:
+           app.pickedCard = True
+           cChestAction(app)
 
 
 def redrawAll(app, canvas):
@@ -121,10 +141,25 @@ def createBoardCoordinates(app):
     app.boardCoordinates.append(col2)
     #(app.boardCoordinates)
 
+def getCChestCoordinates(app):
+    #Sets the coordinates of the community chest card pile
+    x0 = app.marginSide + 3*app.innerMargin/2
+    x1 = x0 + 2*app.marginSide
+    y0 = app.marginTop + 4*app.innerMargin/3
+    y1 = y0 + app.innerMargin
+    app.cChestCoordinates = (x0, y0, x1, y1)
+
+def getChanceCoordinates(app):
+    #Sets the coordinates of the chance card pile
+    x1 = app.marginSide + app.innerBoardLength + app.innerMargin/2
+    x0 = x1 - 2*app.marginSide
+    y0 = app.marginTop + app.innerBoardLength - app.innerMargin/4
+    y1 = y0 + app.innerMargin
+    app.chanceCoordinates = (x0, y0, x1, y1)
+
 def drawInnerBoard(app, canvas):
     #Draws the inside of the board meaning the monopoly and special cards
     x0 = app.marginSide + 3*app.innerMargin/2
-    #print("x0: ", x0)
     x1 = app.marginSide + app.innerBoardLength + app.innerMargin/2
     #print("x1: ", x1)
     y0 = (app.marginTop + 2*app.innerMargin + app.innerBoardLength/8 + 
@@ -712,13 +747,30 @@ def turnRoll(app, player1, player2):
             app.otherPlayer = player1
 
 def startGame(app):
-    turnRoll(app, app.player1, app.player2)
+    #turnRoll(app, app.player1, app.player2)
     app.newTurn = True
     #print("curPlayer: ", app.curPlayer)
-    #app.curPlayer = app.player1 #comment this to return to normal
-    #app.otherPlayer = app.player2 #comment this to return to normal
+    app.curPlayer = app.player1 #comment this to return to normal
+    app.otherPlayer = app.player2 #comment this to return to normal
     app.showMessage(f'{app.curPlayer.name} rolled the higher score. They will go first.')
     
+def cChestAction(app):
+    #displays the cChest card and fulfills the message
+    curblockNum = app.curPlayer.curBlock()
+    curblock = app.curPlayer.getCurBlock(curblockNum)
+    card = curblock.pickACard()
+    app.showMessage(card.message)
+    if "each player" in card.message and "Collect" in card.message:
+        app.curPlayer.bankaccount += card.action
+        app.otherPlayer.bankaccount -= card.action
+    else:
+        app.curPlayer.bankaccount += card.action
+    app.specialBA = True
+    
+
+def chanceAction(app):
+    #displays the chance card and fulfills the message
+    pass
 
 def blockActions(app):
     #This is where the player buys property and pays rent when applicable.
@@ -736,6 +788,17 @@ def blockActions(app):
             app.curPlayer.position = centerX + 5, centerY + 5
         app.curPlayer.jail = True
         app.showMessage("You are now in jail!")
+    #------------------------------------------------------------------
+    if isinstance(curblock, SpecialCards):
+        app.showMessage(f"You've landed on {curblock.name}. Click on the deck to pick a card.")
+        if curblock.name == "Chance":
+            app.landedOnChance = True
+            app.pickedCard = False
+        else:
+            app.landedOnCChest = True
+            app.pickedCard = False
+        app.specialBA = False
+    #--------------------------------------------------------
     if app.curPlayer.isOwned(app.otherPlayer, curblock) == None:
         if (app.curPlayer.canBuy(curblock)):
             answer = app.getUserInput(f"{curblock.name} is avaible for purchase. Would you like to buy the property? (Yes/No)")
@@ -772,7 +835,7 @@ def blockActions(app):
     buyOpponentsProperty(app)
     buyHouse(app)
     buyHotel(app)
-
+    #if app.specialBA:
     app.blockActions = True
 
 def buyOpponentsProperty(app):
