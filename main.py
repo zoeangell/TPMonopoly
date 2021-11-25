@@ -680,7 +680,6 @@ def drawPlayerInfo(app, canvas, player, position):
     canvas.create_text(cx + 2*offset, y, text = 
         f'Bank Account: ${(player.bankaccount)}',fill = "black", 
             font = "Arial 24 bold")
-    
 
 def movePlayer(app, player, distance):
     app.newblock = (player.curBlock() + distance) % app.totalBlocks
@@ -693,6 +692,7 @@ def checkPassGo(app, curblock, newblock):
     newRow = newblock // len(app.board[0])
     if curRow != 0 and newRow == 0:
         app.passedGo = True
+
 #These are the functions for each step of player's turn
 def updatePlayerPos(app):
     #Function for the game play algorithm
@@ -770,7 +770,52 @@ def cChestAction(app):
 
 def chanceAction(app):
     #displays the chance card and fulfills the message
-    pass
+    curblockNum = app.curPlayer.curBlock()
+    curblock = app.curPlayer.getCurBlock(curblockNum)
+    card = curblock.pickACard()
+    app.showMessage(card.message)
+    if "each player" in card.message and "Pay" in card.message:
+        app.curPlayer.bankaccount += card.action
+        app.otherPlayer.bankaccount -= card.action
+        #app.blockActions = True
+    elif card.action != None:
+        app.curPlayer.bankaccount += card.action
+        #app.blockActions = True
+    elif "house" in card.message and "hotel" in card.message:
+        houseNum, hotelNum = 0, 0
+        for word in card.message.split():
+            if "$" in word and houseNum == 0:
+                houseNum = int(word[1:])
+            elif "S" in word and hotelNum != 0:
+                hotelNum = int(word[1:]) 
+        repairs = (houseNum*app.curPlayer.totalHouses() + hotelNum*app.curPlayer.totalHotels())
+        app.curPlayer.bankaccount -= repairs
+        #app.blockActions = True
+    elif "Advance" in card.message:
+        for word in card.message.split():
+            print("word: ", word)
+            block, blockNum = app.curPlayer.findBlock(word)
+            if block != None and blockNum != None: break
+        print("blockNum: ", blockNum, " block: ", block)
+        curRow = curblockNum // len(app.board[0])
+        newRow = blockNum // len(app.board[0])
+        #app.newblock = block
+        #movePlayer(app, app.curPlayer, app.newblock - curblock)
+        app.curPlayer.position = getCenterOfBlock(app, blockNum, app.curPlayer)
+        if block.name == "Go" or curRow > newRow: app.curPlayer.collect200()
+        
+        #app.blockActions = False #This lets the player buy property
+    postBlockActions(app)
+    #app.specialBA = True
+
+        
+
+def postBlockActions(app):
+    buyOpponentsProperty(app)
+    buyHouse(app)
+    buyHotel(app)
+                
+        
 
 def blockActions(app):
     #This is where the player buys property and pays rent when applicable.
@@ -798,6 +843,7 @@ def blockActions(app):
             app.landedOnCChest = True
             app.pickedCard = False
         app.specialBA = False
+        app.blockActions = True
     #--------------------------------------------------------
     if app.curPlayer.isOwned(app.otherPlayer, curblock) == None:
         if (app.curPlayer.canBuy(curblock)):
@@ -832,10 +878,8 @@ def blockActions(app):
     #testBuyHotel(app) 
     #testRailroadTax(app)
     #testUtilityTax(app)
-    buyOpponentsProperty(app)
-    buyHouse(app)
-    buyHotel(app)
-    #if app.specialBA:
+    if app.specialBA:
+        postBlockActions(app)
     app.blockActions = True
 
 def buyOpponentsProperty(app):
@@ -844,6 +888,7 @@ def buyOpponentsProperty(app):
     #Write a new function property available
     opponentLand = app.curPlayer.opponentPropAvailable(app.otherPlayer)
     if len(opponentLand) != 0:
+        print("I can buy my opponent's property.")
         message = app.getUserInput(f"Would you like buy any of {app.otherPlayer}'s property at twice the price?")
         if message != None and "yes" in message.lower():
             while(flag):
@@ -942,6 +987,7 @@ def buyHotel(app):
                 if not flag:
                     app.curPlayer.buyHotel(block)
                     app.showMessage(f'You now own a hotel on {block.name}')
+    app.specialBA = True
     
 
 def switchPlayer(app):
