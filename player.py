@@ -1,4 +1,4 @@
-#This is the player class
+#This is the player class 
 from block import *
 import random
 class Player(object):
