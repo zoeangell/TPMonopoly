@@ -1,6 +1,8 @@
 from cmu_112_graphics import *
 from block import *
 from player import *
+#This is the main file where the program is run, gameplay exists, and graphics/
+#animations happen
 
 ###CITATION:
 #The commands app.getUserInput and app.showMessage come from:
@@ -41,10 +43,10 @@ def appStarted(app):
     playMonopoly(app)
 
 def keyPressed(app, event):
-    #Need to fix the weird behavior on the corners
+    #Allows the player to move around the board and for the player to restart 
+    #the game.
     if app.curPlayer != None:
-        curblock = app.curPlayer.curBlock()
-        #("curblock: ", curblock) 
+        curblock = app.curPlayer.curBlock() 
         row = curblock // 10
         if curblock == app.newblock:
             app.playerMoved = True
@@ -57,7 +59,10 @@ def keyPressed(app, event):
                 app.curPlayer)
     if event.key == "r" and app.endgame:
         appStarted(app)
+
 def timerFired(app):
+    #This function is used for the overall gameplay and order of events for
+    #the player
     if(app.endgame):
         #app.showMessage(f'Game over.')
         pass
@@ -96,9 +101,10 @@ def mousePressed(app, event):
 
 
 def redrawAll(app, canvas):
+    #where everything is drawn
     drawBoard(app, canvas)
     margin = 50
-
+    #end of game message
     if app.endgame:
         canvas.create_rectangle(app.marginSide, 
             app.marginTop + app.boardWidth/2 - margin,
@@ -212,6 +218,7 @@ def drawInnerBoard(app, canvas):
         "Arial 10 bold", fill = "black")
 
 def textLocation(x0, y0, x1, y1):
+    #This function gives the middle of a rectangle to center the text
     boxWidth = x1-x0
     boxHeight = y1-y0
     return (boxWidth, boxHeight)
@@ -275,10 +282,6 @@ def drawSpecialBlocks(app, canvas):
         "Arial 15 bold", fill = "blue")
     
 
-##Need to write a function to send the in jail/visiting coordinates
-
-
-
 def bottomRowCoordinates(app):
     #Gets the coordinates for the row of blocks at the bottom of the board
     row1 = []
@@ -290,7 +293,6 @@ def bottomRowCoordinates(app):
         x0 = startWidth - (i+1)*blockWidth
         x1 = startWidth - (i)*blockWidth
         row1.append((x0, y0, x1, y1,))
-    #print("length of row1", len(row1))
     return row1
 
 def drawBlocks(app, canvas):
@@ -442,7 +444,6 @@ def createBoard(app):
         parkPlace, luxTax, boardwalk])
 
     app.board.extend([row1, col1, row2, col2])
-    #print("len of board",len(app.board))
     createColorDict(app)
 
 def createColorDict(app):
@@ -533,6 +534,7 @@ def drawOwnership(app, canvas, curblock):
                 outline = "black") 
 
 def drawHouse(app, canvas, curblock):
+    #Draws a house on a block
     x0, y0, x1, y1 = curblock.location
     centerY = (y0+y1)/2
     margin = 5
@@ -549,6 +551,7 @@ def drawHouse(app, canvas, curblock):
                 outline = "black")
 
 def drawHotel(app, canvas, curblock):
+    #Draws a hotel on the block
     x0, y0, x1, y1 = curblock.location
     centerY = (y0+y1)/2
     margin = 5
@@ -653,6 +656,7 @@ def getCenterOfBlock(app, blockNum, player):
         return ((centerX + offset, centerY + offset))
 
 def getCenter(app, pos):
+    #Gets the center of a rectangle
     x0, y0, x1, y1 = pos
     centerX = (x0 + x1)/2
     centerY = (y0 + y1)/2
@@ -666,17 +670,16 @@ def jailCoordinates(app):
     app.justVisiting = (x0, centerY, x1, y1)
 
 def playMonopoly(app):
+    #Initiatese the game by initializing the two players
     offset = 5
     startPosition1 = getCenterOfBlock(app, 0, None)
-    #(startPosition1)
-    #test = getCenterOfBlock(app, 2, None)
-    #print("test: ", test)
     startPosition2 = (startPosition1[0] + 2*offset, startPosition1[1] + 3*offset)
     app.player1 = Player("Player 1", app.board, startPosition1, "aquamarine")
     print("Player 1's starting jail position", app.player1.jail)
     app.player2 = Player("Player 2", app.board, startPosition2, "magenta")
 
 def drawPlayerBoard(app, canvas, player):
+    #Draws the player on the board
     if player.jail:
         color = "black"
     else:
@@ -687,6 +690,7 @@ def drawPlayerBoard(app, canvas, player):
         fill = color, outline = "black")
 
 def drawPlayerInfo(app, canvas, player, position):
+    #This draws the player's name, symbol, and bankaccount
     x, y = position
     canvas.create_text(x, y, text = f'{player.name}:', font = "Arial 24 bold",
         fill = 'black')
@@ -699,10 +703,10 @@ def drawPlayerInfo(app, canvas, player, position):
             font = "Arial 24 bold")
 
 def movePlayer(app, player, distance):
+    #Sets what the players new position should be after a roll
     app.newblock = (player.curBlock() + distance) % app.totalBlocks
     app.passedGo = False
     checkPassGo(app, player.curBlock(), app.newblock)
-    #print("newblock: ", app.newblock, "curblock: ", player.curBlock())
 
 def checkPassGo(app, curblock, newblock):
     curRow = curblock // len(app.board[0])
@@ -712,9 +716,8 @@ def checkPassGo(app, curblock, newblock):
 
 #These are the functions for each step of player's turn
 def updatePlayerPos(app):
-    #Function for the game play algorithm
-    #print("Current Player: ",app.curPlayer)
-    #player1, player2 = app.players[0], app.players[1]
+    #Function for the game play algorithm, contains the roll and message
+    #for the player to move a certain number of steps
     app.showMessage(f"It's {app.curPlayer.name}'s turn.")
     print(app.curPlayer.jail)
     if app.curPlayer.jail:
