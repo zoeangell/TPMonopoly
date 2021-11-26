@@ -1,5 +1,4 @@
 from cmu_112_graphics import *
-import random
 from block import *
 from player import *
 
@@ -20,6 +19,7 @@ def appStarted(app):
     app.newblock = None
     app.curPlayer = None
     app.otherPlayer = None
+    app.winner = None
     app.endgame = False
     app.newGame = True
     app.passedGo = False
@@ -55,10 +55,12 @@ def keyPressed(app, event):
                 (event.key == "Down" and row ==3)):
                 app.curPlayer.position = getCenterOfBlock(app, (curblock+1)%40, 
                 app.curPlayer)
-
+    if event.key == "r" and app.endgame:
+        appStarted(app)
 def timerFired(app):
     if(app.endgame):
-        app.showMessage(f'Game over.')
+        #app.showMessage(f'Game over.')
+        pass
     else:
         if app.newGame:
             startGame(app)
@@ -95,6 +97,21 @@ def mousePressed(app, event):
 
 def redrawAll(app, canvas):
     drawBoard(app, canvas)
+    margin = 50
+
+    if app.endgame:
+        canvas.create_rectangle(app.marginSide, 
+            app.marginTop + app.boardWidth/2 - margin,
+            app.marginSide + app.boardWidth, 
+            app.marginTop + app.boardWidth/2 + margin, fill = "black")
+        x = (app.marginSide + app.marginSide + app.boardWidth)/2
+        y = (2*app.marginTop + app.boardWidth)/2
+        canvas.create_text(x, y, text = f"GAME OVER! {app.winner} won!",
+        fill = "white", font = "Arial 30 bold")
+        canvas.create_text(x + margin/2, y + margin/2, 
+            text = "Press r to start a new game.", fill = "white", 
+            font = "Arial 15")
+        
 
 def drawBoard(app, canvas):
     #Draws the skeleton of the board
@@ -724,7 +741,7 @@ def updatePlayerPos(app):
         #print("Current Player Before Move: ", app.curPlayer)
         movePlayer(app, app.curPlayer, rollTotal)
         app.newTurn = False
-
+    bankrupt(app)
     #print("New Current Player: ", app.curPlayer)
 
        
@@ -747,11 +764,11 @@ def turnRoll(app, player1, player2):
             app.otherPlayer = player1
 
 def startGame(app):
-    #turnRoll(app, app.player1, app.player2)
+    turnRoll(app, app.player1, app.player2)
     app.newTurn = True
     #print("curPlayer: ", app.curPlayer)
-    app.curPlayer = app.player1 #comment this to return to normal
-    app.otherPlayer = app.player2 #comment this to return to normal
+    #app.curPlayer = app.player1 #comment this to return to normal
+    #app.otherPlayer = app.player2 #comment this to return to normal
     app.showMessage(f'{app.curPlayer.name} rolled the higher score. They will go first.')
     
 def cChestAction(app):
@@ -805,15 +822,17 @@ def chanceAction(app):
         if block.name == "Go" or curRow > newRow: app.curPlayer.collect200()
         
         #app.blockActions = False #This lets the player buy property
+    bankrupt(app)
     postBlockActions(app)
     #app.specialBA = True
 
         
 
 def postBlockActions(app):
-    buyOpponentsProperty(app)
-    buyHouse(app)
-    buyHotel(app)
+    if not app.endgame:
+        buyOpponentsProperty(app)
+        buyHouse(app)
+        buyHotel(app)
                 
         
 
@@ -881,6 +900,11 @@ def blockActions(app):
     if app.specialBA:
         postBlockActions(app)
     app.blockActions = True
+    bankrupt(app)
+
+def bankrupt(app):
+    if app.curPlayer.bankaccount <= 0: app.endgame = True
+    app.winner = app.otherPlayer
 
 def buyOpponentsProperty(app):
     #Prompts the player with the opportunity to buy the other player's property
@@ -912,6 +936,7 @@ def buyOpponentsProperty(app):
                     app.showMessage(f'You now own {block.name}.')
             print("curPlayer.land: ", app.curPlayer.land)
             print("other Player land: ", app.otherPlayer.land)
+    bankrupt(app)
 
 def buyHouse(app):
     #Let's the player buy a house
@@ -951,7 +976,7 @@ def buyHouse(app):
             if not flag:
                 app.curPlayer.buyHouse(block)
                 app.showMessage(f'You now own a house on {block.name}')
-
+    bankrupt(app)
     
 def buyHotel(app):
     #This function lets a player buy a hotel if qualified
@@ -969,7 +994,7 @@ def buyHotel(app):
         if flag:
             hotelOptions.append(key)
     if hotelOptions != []:
-            answer = app.getUserInput(f"Do you want to buy a hotel in the {hotelOptions} blocks?")
+            answer = app.getUserInput(f"Do you want to buy a hotel in the {hotelOptions} blocks? Answer yes/no")
             if answer != None and "yes" in answer.lower():
                 flag = True
                 while(flag):
@@ -988,6 +1013,7 @@ def buyHotel(app):
                     app.curPlayer.buyHotel(block)
                     app.showMessage(f'You now own a hotel on {block.name}')
     app.specialBA = True
+    bankrupt(app)
     
 
 def switchPlayer(app):
