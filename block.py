@@ -1,4 +1,5 @@
-#This is the file with the block class
+#This is the file with the block class. A block are the squares on the outside
+#of the board that the players move on
 from card import *
 class Block(object):
     #General block class for the board
