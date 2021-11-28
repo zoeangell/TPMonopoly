@@ -767,11 +767,11 @@ def turnRoll(app, player1, player2):
             app.otherPlayer = player1
 
 def startGame(app):
-    #turnRoll(app, app.player1, app.player2)
+    turnRoll(app, app.player1, app.player2)
     app.newTurn = True
     #print("curPlayer: ", app.curPlayer)
-    app.curPlayer = app.player1 #comment this to return to normal
-    app.otherPlayer = app.player2 #comment this to return to normal
+    #app.curPlayer = app.player1 #comment this to return to normal
+    #app.otherPlayer = app.player2 #comment this to return to normal
     app.showMessage(f'{app.curPlayer.name} rolled the higher score. They will go first.')
     
 def cChestAction(app):
