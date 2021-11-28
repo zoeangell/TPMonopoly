@@ -767,11 +767,11 @@ def turnRoll(app, player1, player2):
             app.otherPlayer = player1
 
 def startGame(app):
-    turnRoll(app, app.player1, app.player2)
+    #turnRoll(app, app.player1, app.player2)
     app.newTurn = True
     #print("curPlayer: ", app.curPlayer)
-    #app.curPlayer = app.player1 #comment this to return to normal
-    #app.otherPlayer = app.player2 #comment this to return to normal
+    app.curPlayer = app.player1 #comment this to return to normal
+    app.otherPlayer = app.player2 #comment this to return to normal
     app.showMessage(f'{app.curPlayer.name} rolled the higher score. They will go first.')
     
 def cChestAction(app):
@@ -1055,18 +1055,20 @@ def testBuyHotel(app):
             if curblock.color != None and curblock.hotel == 0:
                 curblock.house = 3
 
-#def testRailroadTax(app):
+def testRailroadTax(app):
     #shows that the railroad tax is working
-    #for row in range(len(app.board)):
-        #for col in range(len(app.board[0])):
-            #curblock = app.board[row][col]
-            #if isinstance(curblock, Railroad):
-                #curblock.ownership = app.player1.name
-                #app.player1.land.append(curblock)
-    #app.player1.land.pop()
-    #app.player1.land.pop()
+    for row in range(len(app.board)):
+        for col in range(len(app.board[0])):
+            curblock = app.board[row][col]
+            if isinstance(curblock, Railroad):
+                curblock.ownership = app.player1.name
+                app.player1.land.append(curblock)
+    app.player1.land[-1].ownership = None
+    app.player1.land[-2].ownership = None
+    app.player1.land.pop()
+    app.player1.land.pop()
 
-'''def testUtilityTax(app):
+def testUtilityTax(app):
     for row in range(len(app.board)):
         for col in range(len(app.board[0])):
             curblock = app.board[row][col]
