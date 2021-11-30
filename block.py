@@ -38,10 +38,10 @@ class SpecialCards(Block):
 
 
 class Railroad(Block):
+    #The special class for railroad blocks
     def __init__(self, location, color, name, price):
         super().__init__(location, color, name, price)
         self.property = None
-        #write a rent function
 
 class Tax(Block):
     #Special block to handle luxury and income tax
@@ -71,7 +71,6 @@ class Corner(Block):
     def rent(self):
         return None
 
-    #Write a rent function
 
 
 
