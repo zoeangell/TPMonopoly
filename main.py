@@ -1,6 +1,7 @@
 from cmu_112_graphics import *
 from block import *
 from player import *
+from card import *
 #This is the main file where the program is run, gameplay exists, and graphics/
 #animations happen
 
@@ -45,6 +46,10 @@ def appStarted(app):
     app.chanceCoordinates = None
     app.landedOnChance, app.landedOnCChest = False, False
     app.pickedCard = False
+    app.chanceDeck = []
+    createChanceDeck(app)
+    app.cChestDeck = []
+    createCChestDeck(app)
     createBoardCoordinates(app)
     createBoard(app)
     app.totalBlocks = len(app.board) * len(app.board[0])
@@ -57,12 +62,7 @@ def appStarted(app):
 def keyPressed(app, event):
     #Allows the player to move around the board and for the player to restart 
     #the game.
-    '''if app.home:
-        if event.key == "c":
-            print("Switch screens")
-            app.home = False
-            app.main = True
-            #appStarted(app)'''
+    #Also includes new short cut keypresses
     if app.main:
         if app.curPlayer != None:
             curblock = app.curPlayer.curBlock() 
@@ -81,6 +81,9 @@ def keyPressed(app, event):
             app.newGame = True
             app.endgame = False
             playMonopoly(app)
+        if event.key == "e":
+            app.curPlayer.bankaccount = 0
+            bankrupt(app)
         if event.key == "h":
             app.home = True
             app.newGame = True
@@ -90,14 +93,12 @@ def keyPressed(app, event):
             testBuyHouses(app)
         if event.key == "y":
             testBuyHotel(app)
+        
             
 
 def timerFired(app):
     #This function is used for the overall gameplay and order of events for
     #the player
-    '''if(app.endgame):
-        #app.showMessage(f'Game over.')
-        pass'''
     if app.main:
         if not app.endgame:
             if app.newGame:
@@ -108,11 +109,11 @@ def timerFired(app):
                 app.playerMoved = False
             if app.curPlayer.curBlock() == app.newblock:
                 app.playerMoved = True
-                if(app.passedGo): app.curPlayer.collect200()
                 app.newTurn = False
             if(app.playerMoved and not app.blockActions):
                 blockActions(app)
             if(app.blockActions and app.specialBA):
+                if(app.passedGo): app.curPlayer.collect200()
                 switchPlayer(app)
 
 
@@ -121,6 +122,7 @@ def mousePressed(app, event):
     #and if they should be allowed to pick a card.
     margin = 50
     boxWidth, boxHeight = 80, 30
+    #The coordinates of the start button
     x0 = app.width/2 - boxWidth
     y0 = 3*app.height/4 - boxHeight + margin
     x1 = app.width/2 + boxWidth
@@ -129,6 +131,7 @@ def mousePressed(app, event):
         if event.x >= x0 and event.x <= x1 and event.y >= y0 and event.y <= y1:
             app.home = False
             app.main = True
+            playMonopoly(app)
     if app.main:
         if app.landedOnChance and not app.pickedCard:
             x0, y0, x1, y1 = app.chanceCoordinates
@@ -166,6 +169,7 @@ def redrawAll(app, canvas):
         
 
 def drawHome(app, canvas):
+    #Draws the home screen
     margin = 50
     boxWidth, boxHeight = 80, 30
     canvas.create_rectangle(0, 0, app.width, app.height, fill = "Aquamarine")
@@ -325,6 +329,7 @@ def drawSpecialBlocks(app, canvas):
     canvas.create_text((x0 + 1/2*boxWidth),
         y0 + boxHeight/2 - margin, text="Just Visiting", font =
         "Arial 10 bold", fill = "black")
+
     #The Free Parking 
     x0 = app.marginSide
     y0 = app.marginTop
@@ -391,14 +396,11 @@ def leftColCoordinates(app):
     blockWidth = app.innerBoardLength/app.nBlocks
     startHeight = app.marginTop + app.boardWidth - app.innerMargin
     x0 = app.marginSide
-    #canvas.create_line(x0, startHeight, x1, startHeight, outline = "purple")
     x1 = x0 + app.innerMargin
-    #canvas.create_line(x0, startHeight, x1, startHeight, fill = "blue")
     for i in range(app.nBlocks):
         y0 = startHeight - (i+1)*blockWidth
         y1 = startHeight - (i)*blockWidth
         col1.append((x0, y0, x1 , y1))
-    #print("length of col1: ", len(col1))
     return col1
 
 def topRowCoordinates(app):
@@ -522,13 +524,11 @@ def createColorDict(app):
         for col in range(len(app.board[0])):
             curblock = app.board[row][col]
             if curblock.color != None:
-                #print(curblock.name)
                 app.colorDict[curblock.color] = app.colorDict.get(curblock.color, 0)
                 if app.colorDict[curblock.color] == 0:
                     app.colorDict[curblock.color] = [curblock]
                 else:
                     app.colorDict[curblock.color].append(curblock)
-    #print ("app.colorDict: ",app.colorDict)
 
 
 def drawSideBlockDesign(app, canvas):
@@ -740,7 +740,7 @@ def jailCoordinates(app):
     app.justVisiting = (x0, centerY, x1, y1)
 
 def playMonopoly(app):
-    #Initiatese the game by initializing the two players
+    #Initialize the game by initializing the two players
     offset = 5
     startPosition1 = getCenterOfBlock(app, 0, None)
     startPosition2 = (startPosition1[0] + 2*offset, startPosition1[1] + 3*offset)
@@ -779,6 +779,7 @@ def movePlayer(app, player, distance):
     checkPassGo(app, player.curBlock(), app.newblock)
 
 def checkPassGo(app, curblock, newblock):
+    #Checks if the player passed go
     curRow = curblock // len(app.board[0])
     newRow = newblock // len(app.board[0])
     if curRow != 0 and newRow == 0:
@@ -811,11 +812,9 @@ def updatePlayerPos(app):
         rollTotal = roll[0] + roll[1]
         app.roll = rollTotal
         app.showMessage(f'You rolled {roll}. Use the arrow keys to move yourself {rollTotal} spaces.')
-        #print("Current Player Before Move: ", app.curPlayer)
         movePlayer(app, app.curPlayer, rollTotal)
         app.newTurn = False
     bankrupt(app)
-    #print("New Current Player: ", app.curPlayer)
 
        
 
@@ -824,9 +823,7 @@ def turnRoll(app, player1, player2):
     p1CombinedRoll, p2CombinedRoll = 0, 0
     while(p1CombinedRoll == p2CombinedRoll):
         player1roll = player1.roll()
-        #print("player1roll ", player1roll )
         player2roll = player2.roll()
-        #print("player2roll ", player2roll )
         p1CombinedRoll = player1roll[0] + player1roll[1]
         p2CombinedRoll = player2roll[0] + player2roll[1]
         if(p1CombinedRoll > p2CombinedRoll):
@@ -844,12 +841,58 @@ def startGame(app):
     #app.curPlayer = app.player1 #comment this to return to normal
     #app.otherPlayer = app.player2 #comment this to return to normal
     app.showMessage(f'{app.curPlayer.name} rolled the higher score. They will go first.')
+
+def createChanceDeck(app):
+    #Fills the chance deck
+    #print("chanceDeck",app.chanceDeck)
+    card1 = Card("Advance to Boardwalk", None)
+    card2 = Card("Advance to GO and collect $200", None)
+    card3 = Card("Advance to IL Ave.", None)
+    card4 = Card("Bank pays you dividend of $50", 50)
+    card5 = Card("Advance to St. Charles Place. If you pass go collect $200", None)
+    card6 = Card("Make general repairs on all your property, $25 for each house and $100 for each hotel",
+                None)
+    card7 = Card("Advance to Reading Railroad", None)
+    card8 = Card("Speeding fine $15", -15)
+    card9 = Card("You have been elected Chairman of the Board. Pay $50 to each player", -50)
+    card10 = Card("Your building loan matures. Collect $150", 150)
+    app.chanceDeck.extend([card1, card8, card3, card4, card6, card9, card2,
+            card7, card5, card10])
+
+def createCChestDeck(app):
+    #Fills the community chest deck
+    card1 = Card("Bank error in your favor. Collect $200", 200)
+    card2 = Card("Doctor's fee. Pay $50", -50)
+    card3 = Card("From sale from stock you get $50", 50)
+    card4 = Card("Holiday fund matures. Receive $100.", 100)
+    card5 = Card("Income tax refund. Collect $20.", 20)
+    card6 = Card("It's your birthday. Collect $10 from each player", 10)
+    card7 = Card("Life insurance matures. Collect $100", 100)
+    card8 = Card("Pay hospital fees of $100.", -100)
+    card9 = Card("Pay school fees of $50", -50)
+    card10 = Card("You have won a beauty contest. Collect $10", 10)
+    app.cChestDeck.extend([card6, card2, card3, card4, card5, card1, card7,
+            card8, card9, card10])
+
+def pickACard(app, curblock):
+    #Picks the top card of the deck and then puts in at the bottom of the
+    #pile
+    if curblock.name == "Chance":
+        card = app.chanceDeck.pop(0)
+        app.chanceDeck.append(card)
+        print("chanceDeck: ", app.chanceDeck)
+    else:
+        card = app.cChestDeck.pop(0)
+        app.cChestDeck.append(card)
+        print("cChest Deck: ", app.cChestDeck)
+    return card
+
     
 def cChestAction(app):
     #displays the cChest card and fulfills the message
     curblockNum = app.curPlayer.curBlock()
     curblock = app.curPlayer.getCurBlock(curblockNum)
-    card = curblock.pickACard()
+    card = pickACard(app, curblock)
     app.showMessage(card.message)
     if "each player" in card.message and "Collect" in card.message:
         app.curPlayer.bankaccount += card.action
@@ -863,7 +906,7 @@ def chanceAction(app):
     #displays the chance card and fulfills the message
     curblockNum = app.curPlayer.curBlock()
     curblock = app.curPlayer.getCurBlock(curblockNum)
-    card = curblock.pickACard()
+    card = pickACard(app, curblock)
     app.showMessage(card.message)
     if "each player" in card.message and "Pay" in card.message:
         app.curPlayer.bankaccount += card.action
@@ -973,35 +1016,7 @@ def blockActions(app):
         app.specialBA = False
         app.blockActions = True
     #--------------------------------------------------------
-    '''if app.curPlayer.isOwned(app.otherPlayer, curblock) == None:
-        if (app.curPlayer.canBuy(curblock)):
-            answer = app.getUserInput(f"{curblock.name} is avaible for purchase. Would you like to buy the property? (Yes/No)")
-            if answer != None and answer.lower() == "yes":
-                app.curPlayer.buyBlock(curblock)
-                app.showMessage(f'You now own {curblock.name}.')
-
-    elif app.curPlayer.isOwned(app.otherPlayer, curblock ) == False:
-        if isinstance(curblock, Utility):
-            print("roll: ", app.roll)
-            tax = app.curPlayer.payUtilityTax(curblock, app.roll, app.otherPlayer)
-            app.showMessage(f'You paid ${tax} in tax.')
-        elif isinstance(curblock, Railroad):
-            tax = app.curPlayer.payRailroadTax(curblock, app.otherPlayer)
-            app.showMessage(f'You paid ${tax} in tax.')
-        else:
-            app.curPlayer.payRent(curblock, app.otherPlayer)
-            app.showMessage(f'You paid ${abs(curblock.rent())} in rent.')
-
-    if isinstance(curblock, Tax):
-        if curblock.name == "Income Tax":
-            answer = app.getUserInput("You need to pay income tax. Would you like to pay 10% of your income or $200?")
-            if answer == None or "10" in answer:
-                app.curPlayer.payIncomeTax()
-            else:
-                app.curPlayer.payTax(curblock)
-        else:
-            app.curPlayer.payTax(curblock)
-            app.showMessage(f'You paid ${abs(curblock.price)} in tax.')'''
+   
     buyProperty(app)
 
     #testBuyHouses(app)
