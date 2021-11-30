@@ -180,6 +180,7 @@ class Player(object):
         return blockNum
 
     def opponentPropAvailable(self, other):
+        #Find the opponent's land that don't have houses/hotels on them
         availableLand = []
         for block in other.land:
             if block.house > 0 or block.hotel > 0:
@@ -189,9 +190,11 @@ class Player(object):
         return availableLand
     
     def collect200(self):
+        #Player gets $200 after passing GO
         self.bankaccount += 200
 
     def payJailFine(self):
+        #The jail fine to get out of jail
         self.bankaccount -= 50
 
     def totalHouses(self):
