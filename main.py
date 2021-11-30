@@ -76,10 +76,20 @@ def keyPressed(app, event):
                     (event.key == "Down" and row ==3)):
                     app.curPlayer.position = getCenterOfBlock(app, (curblock+1)%40, 
                     app.curPlayer)
+       
         if event.key == "r" and app.endgame:
             app.newGame = True
             app.endgame = False
             playMonopoly(app)
+        if event.key == "h":
+            app.home = True
+            app.newGame = True
+            app.endgame = False
+            app.main = False
+        if event.key == "v":
+            testBuyHouses(app)
+        if event.key == "y":
+            testBuyHotel(app)
             
 
 def timerFired(app):
@@ -827,6 +837,7 @@ def turnRoll(app, player1, player2):
             app.otherPlayer = player1
 
 def startGame(app):
+    #Initializes the game
     turnRoll(app, app.player1, app.player2)
     app.newTurn = True
     #print("curPlayer: ", app.curPlayer)
@@ -1003,6 +1014,7 @@ def blockActions(app):
     bankrupt(app)
 
 def bankrupt(app):
+    #Checks if one player went bankrupt
     if app.curPlayer.bankaccount <= 0: app.endgame = True
     app.winner = app.otherPlayer
 
@@ -1011,6 +1023,7 @@ def buyOpponentsProperty(app):
     flag = True
     #Write a new function property available
     opponentLand = app.curPlayer.opponentPropAvailable(app.otherPlayer)
+    print("opponentLand: ", opponentLand)
     if len(opponentLand) != 0:
         print("I can buy my opponent's property.")
         message = app.getUserInput(f"Would you like buy any of {app.otherPlayer}'s property at twice the price?")
