@@ -62,7 +62,7 @@ class SpecialCards(Block):
         card8 = Card("Speeding fine $15", -15)
         card9 = Card("You have been elected Chairman of the Board. Pay $50 to each player", -50)
         card10 = Card("Your building loan matures. Collect $150", 150)
-        self.chance.extend([card6, card8, card3, card4, card1, card9, card2,
+        self.chance.extend([card1, card8, card3, card4, card6, card9, card2,
             card7, card5, card10])
 
     def pickACard(self):
@@ -74,7 +74,11 @@ class SpecialCards(Block):
         else:
             card = self.cChest.pop(0)
             self.cChest.append(card)
+            print("cChest: ", self.cChest)
         return card
+
+    def __repr__(self):
+        return self.name
 
 
 class Railroad(Block):
