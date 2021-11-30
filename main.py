@@ -16,10 +16,8 @@ def appStarted(app):
     # https://www.cs.cmu.edu/~112/notes/notes-animations-part4.html#loadImageUsingFile
     app.image1 = app.loadImage('MonopolyPic.jpeg')
     app.image2 = app.scaleImage(app.image1, 1/3)
-    print("app Started is called")
-    print("app.main: ", app.main)
-    #if app.main:
-    print("The main settings are being set")
+    ####CITATION: 
+    # https://www.independent.co.uk/news/world/americas/giant-monopoly-board-carpet-reddit-b1831102.html
     app.boardWidth = 500
     app.marginSide = 50
     app.marginTop = 150
