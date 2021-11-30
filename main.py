@@ -986,8 +986,6 @@ def postBlockActions(app):
         buyHouse(app)
         buyHotel(app)
                 
-        
-
 def blockActions(app):
     #This is where the player buys property and pays rent when applicable.
     curblockNum = app.curPlayer.curBlock()
@@ -1146,8 +1144,6 @@ def buyHotel(app):
 
 def switchPlayer(app):
     #This switches the curPlayer when the turn is done
-    #print(f'{app.curPlayer.name}: ', app.curPlayer.bankaccount)
-    #print(f'{app.otherPlayer.name}: ', app.otherPlayer.bankaccount)
     if app.curPlayer.bankaccount <= 0:
         app.endgame = True
     if app.curPlayer == app.player1: 
@@ -1202,12 +1198,6 @@ def testUtilityTax(app):
                 app.player1.land.append(curblock)
     app.player1.land.pop()
     #app.player1.land.pop()'''
-
-            
-
-    
-
-
 
 runApp(width=700, height=700)
 
