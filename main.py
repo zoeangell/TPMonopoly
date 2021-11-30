@@ -9,6 +9,16 @@ from player import *
 #The commands app.getUserInput and app.showMessage come from:
 #https://www.cs.cmu.edu/~112/notes/notes-animations-part4.html
 def appStarted(app):
+    app.home = True
+    app.main = False
+    #####CITATION: 
+    # https://www.cs.cmu.edu/~112/notes/notes-animations-part4.html#loadImageUsingFile
+    app.image1 = app.loadImage('MonopolyPic.jpeg')
+    app.image2 = app.scaleImage(app.image1, 1/3)
+    print("app Started is called")
+    print("app.main: ", app.main)
+    #if app.main:
+    print("The main settings are being set")
     app.boardWidth = 500
     app.marginSide = 50
     app.marginTop = 150
@@ -42,82 +52,131 @@ def appStarted(app):
     getChanceCoordinates(app)
     jailCoordinates(app)
     playMonopoly(app)
+    
 
 def keyPressed(app, event):
     #Allows the player to move around the board and for the player to restart 
     #the game.
-    if app.curPlayer != None:
-        curblock = app.curPlayer.curBlock() 
-        row = curblock // 10
-        if curblock == app.newblock:
-            app.playerMoved = True
-        else:
-            if ((event.key == "Left" and row == 0) or 
-                (event.key == "Up" and row  == 1) or
-                (event.key == "Right" and row == 2) or
-                (event.key == "Down" and row ==3)):
-                app.curPlayer.position = getCenterOfBlock(app, (curblock+1)%40, 
-                app.curPlayer)
-    if event.key == "r" and app.endgame:
-        appStarted(app)
+    '''if app.home:
+        if event.key == "c":
+            print("Switch screens")
+            app.home = False
+            app.main = True
+            #appStarted(app)'''
+    if app.main:
+        if app.curPlayer != None:
+            curblock = app.curPlayer.curBlock() 
+            row = curblock // 10
+            if curblock == app.newblock:
+                app.playerMoved = True
+            else:
+                if ((event.key == "Left" and row == 0) or 
+                    (event.key == "Up" and row  == 1) or
+                    (event.key == "Right" and row == 2) or
+                    (event.key == "Down" and row ==3)):
+                    app.curPlayer.position = getCenterOfBlock(app, (curblock+1)%40, 
+                    app.curPlayer)
+        if event.key == "r" and app.endgame:
+            app.newGame = True
+            app.endgame = False
+            playMonopoly(app)
+            
 
 def timerFired(app):
     #This function is used for the overall gameplay and order of events for
     #the player
-    if(app.endgame):
+    '''if(app.endgame):
         #app.showMessage(f'Game over.')
-        pass
-    else:
-        if app.newGame:
-            startGame(app)
-            app.newGame = False
-        if(app.newTurn):
-            updatePlayerPos(app)
-            app.playerMoved = False
-        if app.curPlayer.curBlock() == app.newblock:
-            app.playerMoved = True
-            if(app.passedGo): app.curPlayer.collect200()
-            app.newTurn = False
-        if(app.playerMoved and not app.blockActions):
-            blockActions(app)
-        if(app.blockActions and app.specialBA):
-            switchPlayer(app)
-
+        pass'''
+    if app.main:
+        if not app.endgame:
+            if app.newGame:
+                startGame(app)
+                app.newGame = False
+            if(app.newTurn):
+                updatePlayerPos(app)
+                app.playerMoved = False
+            if app.curPlayer.curBlock() == app.newblock:
+                app.playerMoved = True
+                if(app.passedGo): app.curPlayer.collect200()
+                app.newTurn = False
+            if(app.playerMoved and not app.blockActions):
+                blockActions(app)
+            if(app.blockActions and app.specialBA):
+                switchPlayer(app)
 
 
 def mousePressed(app, event):
     #Decides if the user clicked on the card piles in the center of the board
     #and if they should be allowed to pick a card.
-    print("This function was called")
-    if app.landedOnChance and not app.pickedCard:
-        x0, y0, x1, y1 = app.chanceCoordinates
+    margin = 50
+    boxWidth, boxHeight = 80, 30
+    x0 = app.width/2 - boxWidth
+    y0 = 3*app.height/4 - boxHeight + margin
+    x1 = app.width/2 + boxWidth
+    y1 = 3*app.height/4 + boxHeight + margin
+    if app.home:
         if event.x >= x0 and event.x <= x1 and event.y >= y0 and event.y <= y1:
-           app.pickedCard = True
-           chanceAction(app)
-    elif app.landedOnCChest and not app.pickedCard:
-        x0, y0, x1, y1 = app.cChestCoordinates
-        if event.x >= x0 and event.x <= x1 and event.y >= y0 and event.y <= y1:
-           app.pickedCard = True
-           cChestAction(app)
+            app.home = False
+            app.main = True
+    if app.main:
+        if app.landedOnChance and not app.pickedCard:
+            x0, y0, x1, y1 = app.chanceCoordinates
+            if event.x >= x0 and event.x <= x1 and event.y >= y0 and event.y <= y1:
+                app.pickedCard = True
+                chanceAction(app)
+        elif app.landedOnCChest and not app.pickedCard:
+            x0, y0, x1, y1 = app.cChestCoordinates
+            if event.x >= x0 and event.x <= x1 and event.y >= y0 and event.y <= y1:
+                app.pickedCard = True
+                cChestAction(app)
+    
 
 
 def redrawAll(app, canvas):
     #where everything is drawn
-    drawBoard(app, canvas)
+    if app.home:
+        drawHome(app, canvas)
+    if app.main:
+        drawBoard(app, canvas)
+        margin = 50
+        #end of game message
+        if app.endgame:
+            canvas.create_rectangle(app.marginSide, 
+                app.marginTop + app.boardWidth/2 - margin,
+                app.marginSide + app.boardWidth, 
+                app.marginTop + app.boardWidth/2 + margin, fill = "black")
+            x = (app.marginSide + app.marginSide + app.boardWidth)/2
+            y = (2*app.marginTop + app.boardWidth)/2
+            canvas.create_text(x, y, text = f"GAME OVER! {app.winner} won!",
+                fill = "white", font = "Arial 30 bold")
+            canvas.create_text(x + margin/2, y + margin/2, 
+                text = "Press r to start a new game or press h to go home.", 
+                fill = "white", font = "Arial 15")
+        
+
+def drawHome(app, canvas):
     margin = 50
-    #end of game message
-    if app.endgame:
-        canvas.create_rectangle(app.marginSide, 
-            app.marginTop + app.boardWidth/2 - margin,
-            app.marginSide + app.boardWidth, 
-            app.marginTop + app.boardWidth/2 + margin, fill = "black")
-        x = (app.marginSide + app.marginSide + app.boardWidth)/2
-        y = (2*app.marginTop + app.boardWidth)/2
-        canvas.create_text(x, y, text = f"GAME OVER! {app.winner} won!",
-        fill = "white", font = "Arial 30 bold")
-        canvas.create_text(x + margin/2, y + margin/2, 
-            text = "Press r to start a new game.", fill = "white", 
-            font = "Arial 15")
+    boxWidth, boxHeight = 80, 30
+    canvas.create_rectangle(0, 0, app.width, app.height, fill = "Aquamarine")
+    canvas.create_text(app.width/2, app.height/4 - margin, text = "Monopoly Lite",
+        fill = "black", font = "Arial 30 bold")
+    #####CITATION: 
+    # https://www.cs.cmu.edu/~112/notes/notes-animations-part4.html#loadImageUsingFile
+    canvas.create_image(app.width/2, app.height/2, image=ImageTk.PhotoImage(app.image2))
+    #canvas.create_image(500, 300, image=ImageTk.PhotoImage(app.image2))
+    canvas.create_rectangle(app.width/2 - boxWidth, 
+        3*app.height/4 - boxHeight + margin, app.width/2 + boxWidth, 
+        3*app.height/4 + boxHeight + margin, outline = "black",
+        width = 5)
+    x0 = app.width/2 - boxWidth
+    y0 = 3*app.height/4 - boxHeight + margin
+    x1 = app.width/2 + boxWidth
+    y1 = 3*app.height/4 + boxHeight + margin
+    xCenter = (x0 + x1)/2
+    yCenter = (y0 + y1)/2
+    canvas.create_text(xCenter, yCenter, text = "Start", font = "Arial 30 bold",
+        fill = "black")
         
 
 def drawBoard(app, canvas):
@@ -823,16 +882,51 @@ def chanceAction(app):
         #app.newblock = block
         #movePlayer(app, app.curPlayer, app.newblock - curblock)
         app.curPlayer.position = getCenterOfBlock(app, blockNum, app.curPlayer)
+        blockNum = app.curPlayer.curBlock()
+        curblock = app.curPlayer.getCurBlock(blockNum)
+        if curblock.color != None:
+            buyProperty(app)
         if block.name == "Go" or curRow > newRow: app.curPlayer.collect200()
-        
-        #app.blockActions = False #This lets the player buy property
     bankrupt(app)
     postBlockActions(app)
-    #app.specialBA = True
 
+def buyProperty(app):
+    #Allows the player to buy property/pay rent
+    curblockNum = app.curPlayer.curBlock()
+    curblock = app.curPlayer.getCurBlock(curblockNum)
+    if app.curPlayer.isOwned(app.otherPlayer, curblock) == None:
+        if (app.curPlayer.canBuy(curblock)):
+            answer = app.getUserInput(f"{curblock.name} is avaible for purchase. Would you like to buy the property? (Yes/No)")
+            if answer != None and answer.lower() == "yes":
+                app.curPlayer.buyBlock(curblock)
+                app.showMessage(f'You now own {curblock.name}.')
+
+    elif app.curPlayer.isOwned(app.otherPlayer, curblock ) == False:
+        if isinstance(curblock, Utility):
+            print("roll: ", app.roll)
+            tax = app.curPlayer.payUtilityTax(curblock, app.roll, app.otherPlayer)
+            app.showMessage(f'You paid ${tax} in tax.')
+        elif isinstance(curblock, Railroad):
+            tax = app.curPlayer.payRailroadTax(curblock, app.otherPlayer)
+            app.showMessage(f'You paid ${tax} in tax.')
+        else:
+            app.curPlayer.payRent(curblock, app.otherPlayer)
+            app.showMessage(f'You paid ${abs(curblock.rent())} in rent.')
+
+    if isinstance(curblock, Tax):
+        if curblock.name == "Income Tax":
+            answer = app.getUserInput("You need to pay income tax. Would you like to pay 10% of your income or $200?")
+            if answer == None or "10" in answer:
+                app.curPlayer.payIncomeTax()
+            else:
+                app.curPlayer.payTax(curblock)
+        else:
+            app.curPlayer.payTax(curblock)
+            app.showMessage(f'You paid ${abs(curblock.price)} in tax.')
         
 
 def postBlockActions(app):
+    #Things to do after paying rent/buying property. 
     if not app.endgame:
         buyOpponentsProperty(app)
         buyHouse(app)
@@ -868,12 +962,13 @@ def blockActions(app):
         app.specialBA = False
         app.blockActions = True
     #--------------------------------------------------------
-    if app.curPlayer.isOwned(app.otherPlayer, curblock) == None:
+    '''if app.curPlayer.isOwned(app.otherPlayer, curblock) == None:
         if (app.curPlayer.canBuy(curblock)):
             answer = app.getUserInput(f"{curblock.name} is avaible for purchase. Would you like to buy the property? (Yes/No)")
             if answer != None and answer.lower() == "yes":
                 app.curPlayer.buyBlock(curblock)
                 app.showMessage(f'You now own {curblock.name}.')
+
     elif app.curPlayer.isOwned(app.otherPlayer, curblock ) == False:
         if isinstance(curblock, Utility):
             print("roll: ", app.roll)
@@ -895,7 +990,8 @@ def blockActions(app):
                 app.curPlayer.payTax(curblock)
         else:
             app.curPlayer.payTax(curblock)
-            app.showMessage(f'You paid ${abs(curblock.price)} in tax.')
+            app.showMessage(f'You paid ${abs(curblock.price)} in tax.')'''
+    buyProperty(app)
 
     #testBuyHouses(app)
     #testBuyHotel(app) 
