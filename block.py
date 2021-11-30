@@ -74,7 +74,11 @@ class SpecialCards(Block):
         else:
             card = self.cChest.pop(0)
             self.cChest.append(card)
+            print("cChest: ", self.cChest)
         return card
+
+    def __repr__(self):
+        return self.name
 
 
 class Railroad(Block):
