@@ -88,6 +88,7 @@ def keyPressed(app, event):
             app.newGame = True
             app.endgame = False
             app.main = False
+            createBoard(app)
         if event.key == "v":
             testBuyHouses(app)
         if event.key == "y":
