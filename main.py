@@ -18,9 +18,6 @@ def appStarted(app):
     app.image2 = app.scaleImage(app.image1, 1/3)
     ####CITATION: 
     # https://www.independent.co.uk/news/world/americas/giant-monopoly-board-carpet-reddit-b1831102.html
-    
-    #if app.main:
-
     app.boardWidth = 500
     app.marginSide = 50
     app.marginTop = 150
@@ -83,7 +80,6 @@ def keyPressed(app, event):
             app.endgame = False
             playMonopoly(app)
             createBoard(app)
-            showBoard(app)
         if event.key == "e":
             app.curPlayer.bankaccount = 0
             bankrupt(app)
@@ -96,8 +92,6 @@ def keyPressed(app, event):
             testBuyHouses(app)
         if event.key == "y":
             testBuyHotel(app)
-        
-            
 
 def timerFired(app):
     #This function is used for the overall gameplay and order of events for
@@ -169,11 +163,6 @@ def redrawAll(app, canvas):
             canvas.create_text(x + margin/2, y + margin/2, 
                 text = "Press r to start a new game or press h to go home.", 
                 fill = "white", font = "Arial 15")
-        
-def showBoard(app):
-    for row in range(len(app.board)):
-        for col in range(len(app.board[0])):
-            print(f"{app.board[row][col].name}, owner: {app.board[row][col].ownership}")
 
 def drawHome(app, canvas):
     #Draws the home screen
@@ -219,7 +208,6 @@ def drawBoard(app, canvas):
     canvas.create_rectangle(app.marginSide, app.marginTop+app.boardWidth - app.innerMargin,
         app.marginSide + app.innerMargin, app.marginTop + app.boardWidth, outline = "black")
         #coordinates of jail just visiting/in jail coordinates
-        #
     canvas.create_rectangle(app.marginSide + app.boardWidth - app.innerMargin,
         app.marginTop, app.marginSide+ app.boardWidth, 
              app.marginTop + app.innerMargin,  outline = "black") #Go to jail coordinates
@@ -243,7 +231,6 @@ def createBoardCoordinates(app):
     app.boardCoordinates.append(row2)
     col2 = rightColCoordinates(app)
     app.boardCoordinates.append(col2)
-    #(app.boardCoordinates)
 
 def getCChestCoordinates(app):
     #Sets the coordinates of the community chest card pile
@@ -265,7 +252,6 @@ def drawInnerBoard(app, canvas):
     #Draws the inside of the board meaning the monopoly and special cards
     x0 = app.marginSide + 3*app.innerMargin/2
     x1 = app.marginSide + app.innerBoardLength + app.innerMargin/2
-    #print("x1: ", x1)
     y0 = (app.marginTop + 2*app.innerMargin + app.innerBoardLength/8 + 
         3*app.marginSide/4)
     y1 = y0 + (app.innerBoardLength/6)
@@ -277,7 +263,6 @@ def drawInnerBoard(app, canvas):
         y0 + boxHeight/2, text="MONOPOLY", font =
         "Arial 28 bold", fill = "white")
     #Drawing community chest
-    #x0 = 4*app.marginSide/3 + app.innerMargin
     x1 = x0 + 2*app.marginSide
     y0 = app.marginTop + 4*app.innerMargin/3
     y1 = y0 + app.innerMargin
@@ -385,16 +370,12 @@ def drawBlocks(app, canvas):
     col2 = rightColCoordinates(app)
     #createBoardCoordinates(app)
     for (x0, y0, x1, y1) in row1:
-        #print("x0: ", x0, "y0: ", y0, "x1: ", x1, "y1: ", y1)
         canvas.create_rectangle(x0, y0, x1, y1, outline = "black" )
     for (x0, y0, x1, y1) in col1:
-        #print("x0: ", x0, "y0: ", y0, "x1: ", x1, "y1: ", y1)
         canvas.create_rectangle(x0, y0, x1, y1, outline = "black" )
     for (x0, y0, x1, y1) in row2:
-        #print("x0: ", x0, "y0: ", y0, "x1: ", x1, "y1: ", y1)
         canvas.create_rectangle(x0, y0, x1, y1, outline = "black" )
     for (x0, y0, x1, y1) in col2:
-        #print("x0: ", x0, "y0: ", y0, "x1: ", x1, "y1: ", y1)
         canvas.create_rectangle(x0, y0, x1, y1, outline = "black" )
 
 def leftColCoordinates(app):
@@ -843,7 +824,7 @@ def startGame(app):
     app.newTurn = True
     #app.curPlayer = app.player1 #comment this to return to normal
     #app.otherPlayer = app.player2 #comment this to return to normal
-    #These are for the purposes of hardcoder a roll to show a feature
+    #These are for the purposes of hardcoding a roll to show a feature
     app.showMessage(f'{app.curPlayer.name} rolled the higher score. They will go first.')
 
 def createChanceDeck(app):
@@ -883,11 +864,9 @@ def pickACard(app, curblock):
     if curblock.name == "Chance":
         card = app.chanceDeck.pop(0)
         app.chanceDeck.append(card)
-        print("chanceDeck: ", app.chanceDeck)
     else:
         card = app.cChestDeck.pop(0)
         app.cChestDeck.append(card)
-        print("cChest Deck: ", app.cChestDeck)
     return card
 
     
@@ -914,10 +893,8 @@ def chanceAction(app):
     if "each player" in card.message and "Pay" in card.message:
         app.curPlayer.bankaccount += card.action
         app.otherPlayer.bankaccount -= card.action
-        #app.blockActions = True
     elif card.action != None:
         app.curPlayer.bankaccount += card.action
-        #app.blockActions = True
     elif "house" in card.message and "hotel" in card.message:
         houseNum, hotelNum = 0, 0
         for word in card.message.split():
@@ -927,17 +904,12 @@ def chanceAction(app):
                 hotelNum = int(word[1:]) 
         repairs = (houseNum*app.curPlayer.totalHouses() + hotelNum*app.curPlayer.totalHotels())
         app.curPlayer.bankaccount -= repairs
-        #app.blockActions = True
     elif "Advance" in card.message:
         for word in card.message.split():
-            print("word: ", word)
             block, blockNum = app.curPlayer.findBlock(word)
             if block != None and blockNum != None: break
-        print("blockNum: ", blockNum, " block: ", block)
         curRow = curblockNum // len(app.board[0])
         newRow = blockNum // len(app.board[0])
-        #app.newblock = block
-        #movePlayer(app, app.curPlayer, app.newblock - curblock)
         app.curPlayer.position = getCenterOfBlock(app, blockNum, app.curPlayer)
         blockNum = app.curPlayer.curBlock()
         curblock = app.curPlayer.getCurBlock(blockNum)
@@ -960,7 +932,6 @@ def buyProperty(app):
 
     elif app.curPlayer.isOwned(app.otherPlayer, curblock ) == False:
         if isinstance(curblock, Utility):
-            print("roll: ", app.roll)
             tax = app.curPlayer.payUtilityTax(curblock, app.roll, app.otherPlayer)
             app.showMessage(f'You paid ${tax} in tax.')
         elif isinstance(curblock, Railroad):
@@ -1020,8 +991,7 @@ def blockActions(app):
    
     buyProperty(app)
 
-    #testBuyHouses(app)
-    #testBuyHotel(app) 
+    #Here to show specific features 
     #testRailroadTax(app)
     #testUtilityTax(app)
     if app.specialBA:
@@ -1039,9 +1009,7 @@ def buyOpponentsProperty(app):
     flag = True
     #Write a new function property available
     opponentLand = app.curPlayer.opponentPropAvailable(app.otherPlayer)
-    print("opponentLand: ", opponentLand)
     if len(opponentLand) != 0:
-        print("I can buy my opponent's property.")
         message = app.getUserInput(f"Would you like buy any of {app.otherPlayer}'s property at twice the price?")
         if message != None and "yes" in message.lower():
             while(flag):
@@ -1063,21 +1031,15 @@ def buyOpponentsProperty(app):
                 if block in app.otherPlayer.land:
                     app.curPlayer.buyOpponentsProp(block, app.otherPlayer)
                     app.showMessage(f'You now own {block.name}.')
-            print("curPlayer.land: ", app.curPlayer.land)
-            print("other Player land: ", app.otherPlayer.land)
     bankrupt(app)
 
 def buyHouse(app):
     #Let's the player buy a house
     houseOptions = []
-    #print(app.board[0][1] in app.curPlayer.land)
-    #print("curPlayer.land: ", app.curPlayer.land)
     for key in app.colorDict:
         land = app.colorDict[key]
-        #print("land: ", land)
         flag, flag2 = True, True
         for prop in land:
-            #print("prop: ", prop)
             if prop not in app.curPlayer.land or prop.hotel != 0: 
                 flag = False
                 break
@@ -1085,7 +1047,6 @@ def buyHouse(app):
                 flag2 = False
         if flag and not flag2:
             houseOptions.append(key)
-    #print("houseOptions: ", houseOptions)
     if houseOptions != []:
         answer = app.getUserInput(f"Do you want to buy a house in the {houseOptions} blocks? Enter yes/no")
         if answer != None and "yes" in answer.lower():
@@ -1110,13 +1071,10 @@ def buyHouse(app):
 def buyHotel(app):
     #This function lets a player buy a hotel if qualified
     hotelOptions = []
-    #print("curPlayer.land: ", app.curPlayer.land)
     for key in app.colorDict:
         land = app.colorDict[key]
-        #print("land: ", land)
         flag = True
         for prop in land:
-            #print("prop: ", prop)
             if prop not in app.curPlayer.land or prop.house != 3: 
                 flag = False
                 break
@@ -1160,7 +1118,7 @@ def switchPlayer(app):
 
 
 def testBuyHouses(app):
-    #buying houses work
+    #test if buying houses work
     app.curPlayer.land = []
     app.otherPlayer.land = []
     for row in range(len(app.board)):
@@ -1193,6 +1151,7 @@ def testRailroadTax(app):
     app.player1.land.pop()
 
 def testUtilityTax(app):
+    #Test function that makes player 1 own a utility to test if the tax works
     for row in range(len(app.board)):
         for col in range(len(app.board[0])):
             curblock = app.board[row][col]
@@ -1200,7 +1159,6 @@ def testUtilityTax(app):
                 curblock.ownership = app.player1.name
                 app.player1.land.append(curblock)
     app.player1.land.pop()
-    #app.player1.land.pop()'''
 
 runApp(width=700, height=700)
 
