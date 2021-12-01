@@ -18,6 +18,9 @@ def appStarted(app):
     app.image2 = app.scaleImage(app.image1, 1/3)
     ####CITATION: 
     # https://www.independent.co.uk/news/world/americas/giant-monopoly-board-carpet-reddit-b1831102.html
+    
+    #if app.main:
+
     app.boardWidth = 500
     app.marginSide = 50
     app.marginTop = 150
@@ -79,6 +82,8 @@ def keyPressed(app, event):
             app.newGame = True
             app.endgame = False
             playMonopoly(app)
+            createBoard(app)
+            showBoard(app)
         if event.key == "e":
             app.curPlayer.bankaccount = 0
             bankrupt(app)
@@ -165,6 +170,10 @@ def redrawAll(app, canvas):
                 text = "Press r to start a new game or press h to go home.", 
                 fill = "white", font = "Arial 15")
         
+def showBoard(app):
+    for row in range(len(app.board)):
+        for col in range(len(app.board[0])):
+            print(f"{app.board[row][col].name}, owner: {app.board[row][col].ownership}")
 
 def drawHome(app, canvas):
     #Draws the home screen
@@ -512,7 +521,7 @@ def createBoard(app):
     boardwalk = Block(app.boardCoordinates[3][8], "blue", "Boardwalk", -400)
     col2.extend([goToJail, pacificAve, ncAve, cChest3, paAve, rail4, chance3,
         parkPlace, luxTax, boardwalk])
-
+    app.board = []
     app.board.extend([row1, col1, row2, col2])
     createColorDict(app)
 
@@ -590,7 +599,6 @@ def drawOwnership(app, canvas, curblock):
     x0, y0, x1, y1 = curblock.location
     margin2 = 5
     if curblock.ownership != None:
-        #print("hey I own this property.")
         owner = curblock.ownership
         if owner == "Player 1":
             canvas.create_oval(x1 - 2*margin2, y1 - 3*margin2,
@@ -743,7 +751,6 @@ def playMonopoly(app):
     startPosition1 = getCenterOfBlock(app, 0, None)
     startPosition2 = (startPosition1[0] + 2*offset, startPosition1[1] + 3*offset)
     app.player1 = Player("Player 1", app.board, startPosition1, "aquamarine")
-    print("Player 1's starting jail position", app.player1.jail)
     app.player2 = Player("Player 2", app.board, startPosition2, "magenta")
 
 def drawPlayerBoard(app, canvas, player):
@@ -788,7 +795,6 @@ def updatePlayerPos(app):
     #Function for the game play algorithm, contains the roll and message
     #for the player to move a certain number of steps
     app.showMessage(f"It's {app.curPlayer.name}'s turn.")
-    print(app.curPlayer.jail)
     if app.curPlayer.jail:
         answer = app.getUserInput("Would you like to pay a $50 fine to get out of jail?")
         if answer != None and "yes" in answer.lower():
@@ -835,14 +841,13 @@ def startGame(app):
     #Initializes the game
     turnRoll(app, app.player1, app.player2)
     app.newTurn = True
-    #print("curPlayer: ", app.curPlayer)
     #app.curPlayer = app.player1 #comment this to return to normal
     #app.otherPlayer = app.player2 #comment this to return to normal
+    #These are for the purposes of hardcoder a roll to show a feature
     app.showMessage(f'{app.curPlayer.name} rolled the higher score. They will go first.')
 
 def createChanceDeck(app):
     #Fills the chance deck
-    #print("chanceDeck",app.chanceDeck)
     card1 = Card("Advance to Boardwalk", None)
     card2 = Card("Advance to GO and collect $200", None)
     card3 = Card("Advance to IL Ave.", None)
