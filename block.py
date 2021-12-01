@@ -22,7 +22,6 @@ class Block(object):
         else:
             return self.price*0.1
     
-    #create a function to add a property
     def __repr__(self):
         return self.name
 
@@ -70,6 +69,7 @@ class Corner(Block):
         self.gTJ = gTJ
     
     def rent(self):
+        #Overwrites the rent function in the block class
         return None
 
 
