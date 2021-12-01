@@ -4,6 +4,7 @@ from card import *
 class Block(object):
     #General block class for the board
     def __init__(self, location, color, name, price):
+        #Block constructor is being called
         self.location = location
         self.color = color
         self.name = name
