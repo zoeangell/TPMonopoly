@@ -16,20 +16,13 @@ class Player(object):
         x, y = self.position
         #print("x: ", x, "y: ", y)
         curblock = 0
-        #totalBlocks = len(self.board) * len(self.board[0])
         #moves the player one space
         for row in range(len(self.board)):
             for col in range(len(self.board[0])):
                 bx0, by0, bx1, by1 = self.board[row][col].location
-                #should work
                 if x >= bx0 and y >= by0 and x <= bx1 and y <= by1:
-                    curblock = 10*row + col 
-                    #print("hey")
-        #print("curblock: ", curblock)
+                    curblock = 10*row + col
         return curblock
-        #newblock = (curblock + distance)%totalBlocks
-        #return newblock
-        #return (curblock, newblock)
     
     def getCurBlock(self, blockNum):
         #gets the current block object based on the blockNumber in the board
@@ -52,15 +45,16 @@ class Player(object):
             return block, blockNum
         return None, None
 
-
-
     def roll(self):
+        #The function that randomly calculates the roll
         toss1 = random.randint(1,6)
         toss2 = random.randint(1,6)
         return ((toss1, toss2)) #uncomment this to return to normal
         #return((1, 1)) #comment this to return to normal
+        #Here for hardcoding purposes
 
     def __repr__(self):
+        #Used for testing purposes
         return self.name
 
     def buyBlock(self, block):
@@ -70,6 +64,7 @@ class Player(object):
         self.land.append(block)
 
     def canBuy(self, block):
+        #Tests if it's a block that the player can buy
         if (isinstance(block, SpecialCards) or isinstance(block, Tax) or
             isinstance(block, Corner)): return False
         return True
@@ -123,8 +118,6 @@ class Player(object):
         count = 0
         for block in other.land:
             if isinstance(block, Utility): count +=1
-            print(count)
-        #print("Utility Num is: ", count)
         return count
 
     def countRailroads(self, other):
@@ -202,7 +195,6 @@ class Player(object):
         totalHouses = 0
         for prop in self.land:
             totalHouses += prop.house
-        print("totalHouses: ", totalHouses)
         return totalHouses
 
     def totalHotels(self):
@@ -210,7 +202,6 @@ class Player(object):
         totalHotels = 0
         for prop in self.land:
             totalHotels += prop.hotel
-        print("totalHotels: ", totalHotels)
         return totalHotels
 
 
